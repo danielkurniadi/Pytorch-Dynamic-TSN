@@ -1,0 +1,14 @@
+name: pytorch-dynamic-tsn
+channels:
+- defaults
+dependencies:
+- python=3.6
+- pytorch=1.0.1
+- scipy
+- opencv-contrib-python==3.4.4.19
+- pip:
+  - wheel
+  - dominate==2.3.1
+  - git+https://github.com/pytorch/vision.git
+  - Pillow==5.0.0
+  - numpy==1.14.1
