@@ -8,7 +8,7 @@ from torch.nn.init import normal, constant
 import pretrainedmodels
 
 from .base_model import BaseModel
-from dynamic_tsn.utils.pretrainedmodels_support import get_last_feat_dim
+from core.bridge.utils import get_last_feat_dim
 
 class TSN(BaseModel):
 	"""
@@ -25,7 +25,7 @@ class TSN(BaseModel):
 		self.dropout = opts.dropout
 
 		# Prepare modules
-		self.base_network = base_network  # redundant but since we only have one.
+		self.base_network = base_network
 		self.consensus = ConsensusModule(consensus_type)
 		#TODO: configure self.new_length
 		#TODO: from utils.pretrained_support import InputConfig
@@ -126,7 +126,7 @@ class TSN(BaseModel):
 					continue
 				normal_weight.append(ps[0])
 				if len(ps) == 2:
-					normal_bias.append(ps[1])
+					normal_bias.append(ps[1]) # include bias if has
 			# linear module
 			elif isinstance(m, torch.nn.Linear):
 				ps = list(m.parameters())
@@ -138,13 +138,12 @@ class TSN(BaseModel):
 				bn.extend(list(m.parameters()))
 			# batchnorm 2d module
 			elif isinstance(m, torch.nn.BatchNorm2d):
-				# partial bn means only first bn is active
-				# the rest of bn layers are frozen
-				if (not self.partial_bn) or (is_first_bn2d):
+				# bn layers are frozen except first one
+				if (self.partial_bn==False) or (is_first_bn2d):
 					bn.extend(list(m.parameters()))
-			
-			elif len(m._modules) == 0 and len(list(m.parameters())) > 0:
-				raise ValueError("New atomic module type: {} without learning policy.".format(type(m)))
+			elif (len(m._modules) == 0) and (len(list(m.parameters())) > 0):
+				raise ValueError("New atomic module type: "
+					"{} without learning policy.".format(type(m)))
 
 		return [
 			{'params': first_conv_weight, 'lr_mult': 5 if self.modality == 'Flow' else 1, 'decay_mult': 1,

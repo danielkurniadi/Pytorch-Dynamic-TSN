@@ -6,9 +6,9 @@ from torch.autograd import Variable
 from collections import OrderedDict
 from abc import ABC, abstractmethod
 
-from dynamic_tsn import layers
+from core import layers
 
-class BaseModel(nn.Module, ABC):
+class BaseModel(ABC):
 	"""Base Model (Abstract)
 
 	This is the abstract class for models. Model is a wrapper class that uses component design pattern.
@@ -38,7 +38,7 @@ class BaseModel(nn.Module, ABC):
 		By default however, model-specific options should be written by 
 	"""
 
-	def __init__(self, n_class, opts):
+	def __init__(self, n_class):
 		"""Initialise models.
 
 		Parameters
@@ -50,14 +50,11 @@ class BaseModel(nn.Module, ABC):
 			Options for train/val/test (either one).
 
 		"""
-		self.model_names = [self.__class__.__name__]
+		self.model_names = self.__class__.__name__
 
-		self.opts = opts
-		self.gpu_ids = opts.gpu_ids
-		self.is_train = opts.is_train
-		self.device = torch.device('cuda:{}'.format(self.gpu_ids[0])) if self.gpu_ids else torch.device('cpu') # decide CUDA devices or CPU
-		self.save_dir = os.path.join(opts.checkpoints_dir, opts.title) # save checkpoint directory
-		
+		self.device = torch.device('cuda:%d' % self.gpu_ids[0]) if self.gpu_ids else torch.device('cpu')  # decide CUDA devices or CPU
+		self.save_dir = os.path.join(opts.checkpoints_dir, opts.title)  # save checkpoint directory
+
 		self.n_class = n_class
 		self.optimizers = None
 		self.criterions = None
@@ -98,11 +95,3 @@ class BaseModel(nn.Module, ABC):
 		"""Wrapper function for train(mode=False).
 		"""
 		self.train(mode=False)
-
-	@staticmethod
-	def configure_model_options(opts, *args, **kwargs):
-		""" Configure additional options that are model specific after
-		model is initialised <__init__>.
-		"""
-		# modify opts object here
-		return opts
