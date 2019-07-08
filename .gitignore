@@ -12,7 +12,9 @@ debug*
 ### Project ###
 # downloaded and processed data
 data/raw/*
-!data/raw/.keep
+data/preprocessed/*
+data/splits/*
+!data/*/.keep
 # checkpoint files
 checkpoints/*
 !checkpoints/.keep
