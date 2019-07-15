@@ -7,12 +7,10 @@ from torch.nn.init import normal, constant
 
 import pretrainedmodels
 
-from .base_model import BaseModel
-from core.bridge.utils import get_last_feat_dim
+from .base import SingleModelWrapper
 
-class TSN(BaseModel):
-	"""
-	"""
+
+class TSN(SingleModelWrapper):
 	def __init__(self, n_class, base_network, opts,
 					n_segments, modality='RGB', consensus='avg',
 					partial_bn=True, pretrained='imagenet'):
