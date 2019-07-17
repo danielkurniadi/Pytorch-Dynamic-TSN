@@ -14,13 +14,15 @@ import pretrainedmodels
 
 from core.dataset import AggressionDataset
 
-BASE_DIR = "/home/sliu/Desktop/Development/pytorch-dynamic-tsn/"
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SPLITS_DIR = os.path.join(BASE_DIR, "data/splits/")
 
 
 def update_learning_rate(optimizer, learning_rate):
     for param_group in optimizer.param_groups:
         param_group['lr'] = learning_rate
+
 
 num_class = 2
 model = pretrainedmodels.__dict__['resnext101_32x4d'](
@@ -55,7 +57,7 @@ eval_freq = 3 # in epochs
 # splits file
 ftrain_split = os.path.join(SPLITS_DIR, "aggression_train_split_0.txt")
 fval_split = os.path.join(SPLITS_DIR, "aggression_val_split_0.txt")
-ftest_split = os.path.join(SPLITS_DIR, "aggression_test_split_0.txt")
+ftest_split = os.path.join(SPLITS_DIR, "aggression_test_split.txt")
 
 # data generator settings: dataset and dataloader
 train_dataset = AggressionDataset(ftrain_split, input_size,
@@ -68,6 +70,9 @@ test_dataset = AggressionDataset(ftest_split, input_size,
 train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=False)
 test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
+
+if torch.cuda.is_available():
+    model.cuda()
 
 # Loss and backprop settings
 criterion = torch.nn.CrossEntropyLoss()
@@ -108,6 +113,9 @@ X_train, labels = next(dataiter)
 print("Input Train X shape: ", X_train.shape, labels.shape)
 
 # training
+if torch.cuda.is_available():
+    X_train = torch.autograd.Variable(X_train.cuda())
+    labels = torch.autograd.Variable(labels.cuda())
 model.train()
 outputs = model(X_train)
 loss = criterion(outputs, labels)
@@ -132,11 +140,16 @@ X_val, labels_val = next(dataiter)
 print("Input Val X shape: ", X_val.shape, labels_val.shape)
 
 # validation
-model.eval()
-val_outputs = model(X_val)
-val_loss = criterion(outputs, labels_val)
+if torch.cuda.is_available():
+    X_val = torch.autograd.Variable(X_val.cuda())
+    labels_val = torch.autograd.Variable(labels_val.cuda())
 
-_, val_preds = torch.max(val_outputs.data, 1)
-val_acc = torch.mean((val_preds == labels_val.data).float())
+with torch.no_grad():
+    model.eval()
+    val_outputs = model(X_val)
+    val_loss = criterion(outputs, labels_val)
 
-print("--Validation Once | Acc: {} Loss : {}".format(val_acc, val_loss.data))
+    _, val_preds = torch.max(val_outputs.data, 1)
+    val_acc = torch.mean((val_preds == labels_val.data).float())
+
+    print("--Validation Once | Acc: {} Loss : {}".format(val_acc, val_loss.data))
