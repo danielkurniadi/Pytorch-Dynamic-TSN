@@ -1,6 +1,7 @@
 import os
 import time
 import shutil
+import argparse
 
 import torch
 import torchvision
@@ -14,12 +15,14 @@ import pretrainedmodels
 
 from core.dataset import AggressionDataset
 
+
 # Important directories
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOGS_DIR = os.path.join(BASE_DIR, 'logs/')
 CHECKPOINT_DIR = os.path.join(BASE_DIR, 'checkpoints/')
 DATA_DIR = os.path.join(BASE_DIR, 'data/') 
 SPLITS_DIR = os.path.join(DATA_DIR, 'splits/')
+
 
 def main(ftrain_split, ftest_split, split):
     """Run model (resnext101) on aggression dataset
@@ -40,13 +43,13 @@ def main(ftrain_split, ftest_split, split):
     input_std = (0.229, 0.224, 0.225)
 
     # hyperparams settings
-    epochs = 2
+    epochs = 15
     batch_size = 32 # mini-batch-size
     learning_rate = 0.01
     momentum = 0.5
     decay_factor = 0.35
     decay_rate = 5 # in epochs
-    eval_freq = 3 # in epochs
+    eval_freq = 1 # in epochs
 
     # data generator settings: dataset and dataloader
     train_dataset = AggressionDataset(ftrain_split, input_size,
@@ -100,8 +103,7 @@ def main(ftrain_split, ftest_split, split):
             update_learning_rate(optimizer, learning_rate)
 
         # validation
-        if (e+1)%eval_freq == 0:
-            acc = validate(model, val_loader, criterion, e+1, split)
+        acc = validate(model, val_loader, criterion, e+1, split)
 
         if (best_acc*1.02) < acc:
             best_acc = acc
@@ -126,11 +128,12 @@ def main(ftrain_split, ftest_split, split):
 
 
 def save_checkpoints(state):
+    print("Saving checkpoints ...")
     filename = "aggresion_{}_split{}_{}.pth".format(
         state['model_name'], state['split'], state['epoch']
     )
     savepath = os.path.join(CHECKPOINT_DIR, filename)
-    torch.save(state, savepath)
+    torch.save(state['state_dict'], savepath)
 
 
 def update_learning_rate(optimizer, learning_rate):
@@ -195,15 +198,16 @@ def validate(model, dataloader, criterion, e, k):
         if torch.cuda.is_available():
             X = torch.autograd.Variable(X.cuda())
             labels = torch.autograd.Variable(labels.cuda())
-        
-        # feed forward & calculate loss
-        outputs = model(X)
-        loss = criterion(outputs, labels)
 
-        _, preds = torch.max(outputs.data, 1)
-        running_loss += loss.data
-        acc = torch.mean((preds == labels.data).float())
-        running_acc += acc
+        with torch.no_grad():        
+            # feed forward & calculate loss
+            outputs = model(X)
+            loss = criterion(outputs, labels)
+
+            _, preds = torch.max(outputs.data, 1)
+            running_loss += loss.data
+            acc = torch.mean((preds == labels.data).float())
+            running_acc += acc
 
     # print 1 epoch result
     running_loss = running_loss/len(dataloader)
@@ -249,13 +253,34 @@ def log_loss(loss, acc, epoch, k, i=None, train=True):
         filename = os.path.join(LOGS_DIR, 'aggresion_{}_split{}.log'.format(train, k))
         with open(filename, 'a') as f:
             to_write = "epoch:{} iter:{} loss:{}\n".format(epoch, i, loss)
+            f.write(to_write)
 
 
 if __name__ == '__main__':
+    # Check directories
+    if not os.path.isdir(CHECKPOINT_DIR):
+        raise FileNotFoundError("Directory doesn't exist for "
+            "CHECKPOINT_DIR: %s" %CHECKPOINT_DIR)
+    if not os.path.isdir(LOGS_DIR):
+        raise FileNotFoundError("Directory doesn't exist for "
+            "LOGS_DIR: %s" %LOGS_DIR)
+    if not os.path.isdir(DATA_DIR):
+        raise FileNotFoundError("Directory doesn't exist for "
+            "DATA_DIR: %s" %DATA_DIR)
+    if not os.path.isdir(SPLITS_DIR):
+        raise FileNotFoundError("Directory doesn't exist for "
+            "SPLITS_DIR: %s" %SPLITS_DIR)
 
-    # prepare splits
-    for k in range(0, 5):
-        ftrain_split = os.path.join(SPLITS_DIR, 'aggression_train_split_{}.txt'.format(k))
-        ftest_split = os.path.join(SPLITS_DIR, 'aggression_val_split_{}.txt'.format(k))
-    
-        main(ftrain_split, ftest_split, k)
+    # Parse argument
+    parser = argparse.ArgumentParser(description="Welcome to generating splits file of your data.")
+    parser.add_argument('-k', '--split_idx', type=int, default=0,
+        help="Split index of %s dataset" %("Aggression"))
+    args = parser.parse_args()
+
+    k = args.split_idx
+
+    # Training over one split
+    ftrain_split = os.path.join(SPLITS_DIR, 'aggression_train_split_{}.txt'.format(k))
+    ftest_split = os.path.join(SPLITS_DIR, 'aggression_val_split_{}.txt'.format(k))
+
+    main(ftrain_split, ftest_split, k)
