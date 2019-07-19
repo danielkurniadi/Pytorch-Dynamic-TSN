@@ -1,26 +1,22 @@
 import os
 
-import torch
-from torch.autograd import Variable
+class BaseModel:
+	"""Base Model (Abstract)
 
-from collections import OrderedDict
-
-from core import layers
-
-
-class BaseModelWrapper:
-	"""Base Model Wrapper (Abstract)
-
-	This is the abstract class for models. Model is a wrapper class that uses composition design pattern.
+	This is the abstract class for model. Model is a wrapper class that uses composition design pattern.
 	Typically components inside model consist of base neural network module(s), criterion, and optimizers.
+
+	The scope is to run the models, take care of learning process and progress.
+	It needs to provide interface for Labs to run (train/eval), configure hyperparams + options, 
+	and receive training progress reports (for logging purposes).
+
 	To create a model class you need to implement the following:
 
 	Abstract Methods
 	------------------
 	.. __init__: (overload)
 		Initialize new model instance.
-		First, call <BaseModel.__init__(self, base_networks, n_class, opts)> before initializing the model.
-
+		
 	.. forward: (overide)
 		Run forward pass for each base_network. This will be called by <optimize_parameters> and <test>
 	
@@ -32,7 +28,7 @@ class BaseModelWrapper:
 		Implemented for modularity if backprop logic is complicated. Call this function in
 		<optimize_parameters> if implemented.
 
-	.. configure_model_options: (optional)
+	.. modify_cli_options: (optional)
 		Helper to configure <Options> instance, add model-specific options,
 		and rewrite existing default options. Return modified <Options> instance.
 		By default however, model-specific options should be written by 
@@ -50,14 +46,23 @@ class BaseModelWrapper:
 
 		"""
 		self.model_name = self.__class__.__name__
-
-		# Device configuration
-		self.gpu_ids = gpu_ids
-		self.device = torch.device('cuda:0') \
-			if torch.cuda.is_available() else torch.device('cpu')
-
-		# Objectives
 		self.n_classes = n_classes
+
+	@staticmethod
+	def modify_cli_options(parser, is_train=True):
+		"""Add new dataset-specific options, and rewrite default values for existing options.
+		Override this method.
+
+		Parameters:
+		------------------
+		.. parser (ArgumentParser): original option parser
+		.. is_train (bool): whether training phase or test phase
+
+		Returns:
+		------------------
+		.. parser: the modified parser.
+		"""
+		return parser
 
 	#########################
 	# CORE
@@ -79,7 +84,6 @@ class BaseModelWrapper:
 		------------------
 		.. output: torch-tensor | array-like
 			Outputs of shape (batch_size, n_class, ...)
-
 		"""
 		raise NotImplementedError
 
@@ -88,6 +92,16 @@ class BaseModelWrapper:
 		Called for each iterations in train/val/test.
 		"""
 		raise NotImplementedError
+
+	def prepare_model(self):
+		"""Prepare necessary step.
+		Configure model, layers, and hyperparams settings.
+		"""
+		raise NotImplementedError
+
+	#########################
+	# MODE
+	#########################
 
 	def train(self, mode=True):
 		"""Train mode setter and setup.
@@ -99,88 +113,3 @@ class BaseModelWrapper:
 		"""Wrapper function for train(mode=False).
 		"""
 		self.train(mode=False)
-
-	#########################
-	# INPUT
-	#########################
-
-	@property
-	def input_size(self):
-		# Convention: C x H x W
-		if not hasattr(self, '__input_channel'):
-			self.__input_size = (3, 244, 244)
-		
-		return self.__input_size
-
-	@property
-	def input_means(self):
-		if not hasattr(self, '__input_mean'):
-			self.__input_means = [0.5] * self.__input_size[0] # times channel length
-		
-		return self__input_means
-
-	@property
-	def input_std(self):
-		if not hasattr(self, '__input_std'):
-			self.__input_std = [0.5] * self.__input_size[0] # times channel length
-		
-		return self.__input_std
-
-	@input_size.setter
-	def input_size(self, input_size):
-		if not isinstance(input_means, (list, tuple)):
-			raise ValueError("Setting %s.input_means must be a colletion type"
-				" matching the channel length. Trying to set input_means to type: %s" 
-				% (self.model_name, type(input_means)))
-
-		self.__input_size = input_size
-	
-	@input_mean.setter
-	def input_means(self, input_means):
-		if not isinstance(input_means, (list, tuple)):
-			raise ValueError("Setting %s.input_means must be a colletion type"
-				" matching the channel length. Trying to set input_means to type: %s" 
-				% (self.model_name, type(input_means)))
-		
-		self.__input_means = input_means
-
-	@input_std.setter
-	def input_std(self, input_std):
-		if not isinstance(input_std, (list, tuple)):
-			raise ValueError("Setting %s.input_std must be a colletion type"
-				" matching the channel length. Trying to set input_std to type: %s" 
-				% (self.model_name, type(input_std)))
-
-		self.__input_std = input_std
-
-
-class SingleModelWrapper(BaseModelWrapper):
-	"""Wrapper for single architecture model (Abstract)
-
-	This is the abstract wrapper class for single-architecture model. Hence this class only
-	control the flow of a single architecture from forward, backwards, optim policy.
-	
-	Wrapper class uses composition design pattern. Typically components 
-	inside model consist of base neural network module(s), criterion, and optimizers.
-	"""
-
-	__abstract__ = True
-
-	def __init__(self, base_model, n_classes):
-		# Architecture
-		self.base_model = base_model
-		self.model_name = self.__class__.__name__
-
-		# Device configuration
-		self.gpu_ids = gpu_ids
-		self.device = torch.device('cuda:0') \
-			if torch.cuda.is_available() else torch.device('cpu')
-
-		# Objectives
-		self.n_classes = n_classes
-
-	def prepare_model(self):
-		"""Prepare necessary step.
-		Configure model, layers, and hyperparams settings.
-		"""
-		raise NotImplementedError
