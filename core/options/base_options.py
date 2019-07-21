@@ -59,17 +59,19 @@ class BaseOptions(object):
     def initialize(self, parser):
         """ Define all options by adding arguments to argparser
         """
-        # basic parameters
+        # ========================= Runtime Configs ==========================
         parser.add_argument('--name', type=str, default='<EXPERIMENT_NAME>', 
             help='Descriptive name of running experiment. Used for name prefix when storing artifacts')
         parser.add_argument('--gpu_ids', type=str, default='0',
             help='GPU ids: e.g. 0,1,2; use -1 for CPU')
+        parser.add_argument('--num_threads', default=4, type=int,
+            help='# Threads for loading data')
         parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints',
             help='models are saved here')
-        # default model parameters
+
+        # ========================= Model Configs ==========================
         parser.add_argument('--n_classes', type=int, default=10,
-            help='# of output target classes'
-        )
+            help='# of output target classes')
         parser.add_argument('--input_channels', type=int, default=3,
             help='# of input image channels: 3 for RGB and 1 for grayscale')
         parser.add_argument('--norm', type=str, default='instance',
@@ -78,12 +80,9 @@ class BaseOptions(object):
             help='network initialization [normal | xavier | kaiming | orthogonal]')
         parser.add_argument('--init_gain', type=float, default=0.02,
             help='scaling factor for normal, xavier and orthogonal.')
-        # default dataset parameters
-        parser.add_argument('--modality', type=str, default='Flow',
-            help='Modality of dataset [RGB | RGBDiff| Flow | RankPool | OpenPose]')
-        parser.add_argument('--num_threads', default=4, type=int,
-            help='# Threads for loading data')
-        parser.add_argument('--batch_size', type=int, default=32,
+
+        # ========================= Input Configs ==========================
+        parser.add_argument('-b', '--batch_size', type=int, default=32,
             help='Input batch size')
         parser.add_argument('--input_size', type=int, default=286,
             help='Scale images to this size')
@@ -99,8 +98,10 @@ class BaseOptions(object):
             help='If specified, do not flip the images for data augmentation')
 
         # additional parameters
-        parser.add_argument('--verbose', action='store_true', help='If specified, print more debugging information')
-        parser.add_argument('--suffix', default='', type=str, help='customized suffix: opt.name = opt.name + suffix')
+        parser.add_argument('--verbose', action='store_true',
+            help='If specified, print more debugging information')
+        parser.add_argument('--suffix', default='', type=str,
+            help='customized suffix: opt.name = opt.name + suffix')
 
         self.initialized = True
         return parser
