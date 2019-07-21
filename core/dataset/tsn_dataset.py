@@ -129,3 +129,69 @@ class VideoFrameGenerator(object):
             y_img_path = os.path.join(self.directory, self.img_name_tmpl.format('y', idx))
             
             return load_flow_image(x_img_path, y_img_path)
+
+#########################################################################################
+
+class TSNDataset(BaseDataset):
+    """
+    """
+    def __init__(self, list_file,
+                modality='RGB', new_length=1,
+                img_name_tmpl='img_{:05d}.jpg',
+                random_shift=True, randseed=42):
+        self.list_file = list_file
+        self.n_frames = n_frames
+        self.label = label
+        self.modality = modality
+        self.new_length = new_length
+        self.img_name_tmpl = img_name_tmpl
+        self.random_shift = random_shift
+
+        if self.modality == 'RGBDiff':
+            new_length += 1  # Need 1 more frame to calculate diff
+
+        self.parse_list_to_vids()
+
+    #-----------------------
+    # Frames generator
+    #-----------------------
+
+    def parse_list_to_vids(self):
+        """
+        """
+        self.frame_generators = []
+        
+        f = open(self.list_file, 'w')
+        for line in f.readlines():
+            directory, n_frames, label = line.strip().split(' ')
+            n_frames = int(n_frames)
+            label = int(n_frames)
+            
+            self.frame_generators.append(VideoFrameGenerators(
+                directory, n_frames, label,
+                self.img_name_tmpl, self.random_shift
+            ))
+        
+        return self.frame_generators
+
+    #-----------------------
+    # Dataset methods
+    #-----------------------
+
+    @staticmethod
+    def modify_cli_options(parser, is_train=True):
+        parser.add_argument('--dataset', type=str, choices=['ucf101', 'hmdb51', 'kinetics']
+            help='Choices of available datasets')
+        parser.add_argument('--modality', type=str, default='Flow',
+            help='Modality of dataset [RGB | RGBDiff| Flow | RankPool | OpenPose]')
+
+        return parser
+
+    def __getitem__(self, idx):
+        frame_gen = self.frame_generators[idx]
+        imgs = list(frame_gen)
+
+        return imgs
+
+    def __len__(self):
+        return len(self.frame_generators)
