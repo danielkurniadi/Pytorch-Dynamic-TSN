@@ -1,6 +1,9 @@
-import os
+import torch
+from torch import nn
+from torch.nn.init import normal, constant
 
-class BaseModel:
+
+class BaseModel(nn.Module):
 	"""Base Model (Abstract)
 
 	This is the abstract class for model. Model is a wrapper class that uses composition design pattern.
@@ -36,17 +39,9 @@ class BaseModel:
 
 	__abstract__ = True
 
-	def __init__(self, n_classes):
-		"""Initialise models.
-
-		Parameters
-		------------------
-		.. n_class: int
-			Channel length of last outputs, number of classification classes.
-
-		"""
+	def __init__(self):
+		super(BaseModel, self).__init__()
 		self.model_name = self.__class__.__name__
-		self.n_classes = n_classes
 
 	@staticmethod
 	def modify_cli_options(parser, is_train=True):
@@ -107,7 +102,7 @@ class BaseModel:
 		"""Train mode setter and setup.
 		Override default pytorch <train> for each modules.
 		"""
-		pass
+		super(BaseModel, self).train()
 
 	def eval(self):
 		"""Wrapper function for train(mode=False).
