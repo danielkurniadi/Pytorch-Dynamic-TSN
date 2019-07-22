@@ -17,6 +17,7 @@ from core.dataset import AggressionDataset
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SPLITS_DIR = os.path.join(BASE_DIR, "data/splits/")
+CHECKPOINT_DIR = os.path.join(BASE_DIR, "checkpoints/")
 
 
 def update_learning_rate(optimizer, learning_rate):
@@ -152,4 +153,54 @@ with torch.no_grad():
     _, val_preds = torch.max(val_outputs.data, 1)
     val_acc = torch.mean((val_preds == labels_val.data).float())
 
-    print("--Validation Once | Acc: {} Loss : {}".format(val_acc, val_loss.data))
+    print("-- Validation Once | Acc: {} Loss : {}".format(val_acc, val_loss.data))
+
+
+if __name__ == "__main__":
+    num_class = 2
+    testmodel = pretrainedmodels.__dict__['resnext101_32x4d'](
+        num_classes=1000, pretrained='imagenet'
+    )
+
+    # last fully-connected linear module settings
+    testmodel.last_layer_name = 'last_linear'
+    num_feats = testmodel.last_linear.in_features
+    testmodel.last_linear = torch.nn.Linear(num_feats, num_class)
+
+    # last fully-connected linear module settings
+    testmodel.last_layer_name = 'last_linear'
+    num_feats = testmodel.last_linear.in_features
+    testmodel.last_linear = torch.nn.Linear(num_feats, num_class)
+    
+    # checkpoint path
+    checkpoint_path = os.path.join(
+        CHECKPOINT_DIR,
+        "aggresion_ResNeXt101_32x4d_split1_1.pth"
+    )
+
+    # load model checkpoint
+    checkpoint = torch.load(checkpoint_path)
+    testmodel.load_state_dict(checkpoint)
+
+    if torch.cuda.is_available():
+        testmodel.cuda()
+
+    # testing split
+    with torch.no_grad():
+        testmodel.eval()
+        
+        # 1 epoch over all testset
+        running_acc = 0.0
+        for i, (X, labels) in enumerate(train_loader):
+            if torch.cuda.is_available():
+                X = torch.autograd.Variable(X.cuda())
+                labels = torch.autograd.Variable(labels.cuda())
+            
+            # feed forward & get prediction
+            outputs = testmodel(X)
+            _, preds = torch.max(outputs.data, 1)
+            acc = torch.mean((preds == labels.data).float())
+            running_acc += acc
+
+        running_acc = running_acc/len(test_loader)
+        print("-- Test Split - Avg Test Acc: {: .4f}".format(running_acc))
