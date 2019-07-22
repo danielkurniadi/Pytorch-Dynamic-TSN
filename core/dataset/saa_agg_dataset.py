@@ -15,10 +15,10 @@ def clean(path_label_pairs):
         cleaned.append(line)
     return cleaned
 
+
 class AggressionDataset(Dataset):
 
-    def __init__(self, filepath, input_size, preprocessings=[],
-                 input_mean=[0.5,0.5,0.5], input_std=[0.5,0.5,0.5]):
+    def __init__(self, opts):
         """Dataset wrapper for Approximated Rank Pool images.
         
         Arguments:
@@ -27,11 +27,13 @@ class AggressionDataset(Dataset):
             - input_mean (arr): input mean in array-like/tuples, must has same length as the input channels(e.g RGB: 3 channels)
             - input_std (arr): input standard dev in array-like/tuples, must has same length as the input channels (e.g RGB: 3 channels) 
         """
-        if not os.path.exists(os.path.abspath(filepath)):
+        self.filepath = opts.filepath
+
+        if not os.path.exists(os.path.abspath(self.filepath)):
             raise FileNotFoundError("path-label-pairs file (.txt) not found, %s" % filepath)
 
         # read files and get file paths (dataset)
-        with open(filepath, 'r') as fp:
+        with open(self.filepath, 'r') as fp:
             self.path_label_pairs = fp.readlines()
         
         self.path_label_pairs = clean(self.path_label_pairs)
