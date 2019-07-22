@@ -8,19 +8,21 @@ import torchvision
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.optim
-from torch.utils.data import Dataset, DataLoader
 from torchsummary import summary
 
 import pretrainedmodels
 
-from .base import BaseModel
+from .base_model import BaseModel
+
+__all__ = ['Resnext101']  # bad practice
 
 
 class Resnext101(BaseModel):
-    """Resnext wrapper
+    """Resnext wrapper for testing framework
     """
 
     def __init__(self, n_classes, opts, cardinality='32x4d'):
+        super(Resnext101, self).__init__()
         self.n_classes = n_classes
         self.opts = opts
 
@@ -111,3 +113,4 @@ class Resnext101(BaseModel):
         self.optimizer.step()
         self.lr_scheduler.step()
 
+        return outputs, loss
