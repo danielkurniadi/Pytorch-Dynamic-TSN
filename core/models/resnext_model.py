@@ -14,16 +14,14 @@ import pretrainedmodels
 
 from .base_model import BaseModel
 
-__all__ = ['Resnext101']  # bad practice
-
 
 class Resnext101(BaseModel):
     """Resnext wrapper for testing framework
     """
 
-    def __init__(self, n_classes, opts, cardinality='32x4d'):
+    def __init__(self, opts):
         super(Resnext101, self).__init__()
-        self.n_classes = n_classes
+        self.n_classes = opts.n_classes
         self.opts = opts
 
         self.prepare_model()
