@@ -15,14 +15,16 @@ import pretrainedmodels
 from .base_model import BaseModel
 
 
-class Resnext101(BaseModel):
+class ResnextModel(BaseModel):
     """Resnext wrapper for testing framework
     """
 
     def __init__(self, opts):
-        super(Resnext101, self).__init__()
+        super(ResnextModel, self).__init__(opts)
         self.n_classes = opts.n_classes
         self.opts = opts
+        
+        self.pretrained = False
 
         self.prepare_model()
 
@@ -36,14 +38,14 @@ class Resnext101(BaseModel):
         # hyperparams settings
         self.lr = opts.lr
         self.lr_policy = opts.lr_policy
-        self.lr_decay_rate = opts.lr_decay_rate
+        self.lr_decay_factor = opts.lr_decay_factor
         self.lr_decay_iters = opts.lr_decay_iters
-        self.momentum = momentum
+        self.momentum = opts.momentum
 
         # criterion and optimizer settings
         self.criterion = torch.nn.CrossEntropyLoss()
         self.optimizer = torch.optim.SGD(
-            model.parameters(),
+            self.model.parameters(),
             lr = self.lr,
             momentum = self.momentum
         )
@@ -60,20 +62,24 @@ class Resnext101(BaseModel):
         """ Prepare necessary step.
 		Configure model, layers, and hyperparams settings.
         """
-        if cardinality=='32x4d':
-            self.model = pretrainedmodels.__dict__['resnext101_32x4d'](
-                num_classes=1000, pretrained='imagenet'
-            )
-        elif cardinality=='64x4d':
-            self.model = pretrainedmodels.__dict__['resnext101_64x4d'](
-                num_classes=1000, pretrained='imagenet'
-            )
+        if self.pretrained:
+            if cardinality=='32x4d':
+                self.model = pretrainedmodels.__dict__['resnext101_32x4d'](
+                    num_classes=1000, pretrained='imagenet'
+                )
+            elif cardinality=='64x4d':
+                self.model = pretrainedmodels.__dict__['resnext101_64x4d'](
+                    num_classes=1000, pretrained='imagenet'
+                )
+            else:
+                raise ValueError("Invalid Cardinality %s" % cardinality)
+            self.model.last_layer_name = 'last_linear'
         else:
-            raise ValueError("Invalid Cardinality %s" % cardinality)
-
+            self.model = torchvision.models.resnet18(pretrained=False)
+            self.model.last_layer_name = 'fc'
         # last fully-connected linear
-        num_feats = self.model.last_linear.in_features
-        self.model.last_linear = torch.nn.linear(num_feats, num_classes)
+        num_feats = getattr(self.model, self.model.last_layer_name).in_features
+        setattr(self.model, self.model.last_layer_name, torch.nn.Linear(num_feats, self.opts.n_classes))
 
     @staticmethod
     def modify_cli_options(parser, is_train=True):
@@ -109,6 +115,5 @@ class Resnext101(BaseModel):
         loss.backward()
 
         self.optimizer.step()
-        self.lr_scheduler.step()
 
         return outputs, loss
