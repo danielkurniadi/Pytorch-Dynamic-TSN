@@ -140,8 +140,6 @@ class TSNDataset(BaseDataset):
                 img_name_tmpl='img_{:05d}.jpg',
                 random_shift=True, randseed=42):
         self.list_file = list_file
-        self.n_frames = n_frames
-        self.label = label
         self.modality = modality
         self.new_length = new_length
         self.img_name_tmpl = img_name_tmpl
