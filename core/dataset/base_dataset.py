@@ -12,6 +12,11 @@ import torch.utils.data as data
 from PIL import Image
 import torchvision.transforms as transforms
 
+from core.dataset.utils import (
+	check_filepath,
+	read_strip_split_lines
+)
+
 
 class BaseDataset(data.Dataset, ABC):
 	"""This class is an abstract base class (ABC) for datasets.
