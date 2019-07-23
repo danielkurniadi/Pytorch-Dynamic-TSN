@@ -78,7 +78,7 @@ class PathLabelPairDataset(BaseDataset, ABC):
             the modified parser.
         """
         parser.add_argument('--pathlabel_pair_file', type=str, default='default_train_split_0.txt',
-            help='Path to path-label-pair textfile. See /docs/README.md#Dataset about path-label pair file'.)
+            help='Path to path-label-pair textfile. See /docs/README.md#Dataset about path-label pair file')
 
         return parser
 
@@ -125,8 +125,8 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, conve
         else:
             transform_list.append(transforms.Lambda(lambda img: __crop(img, params['crop_pos'], opt.crop_size)))
 
-    if opt.preprocess == 'none':
-        transform_list.append(transforms.Lambda(lambda img: __make_power_2(img, base=4, method=method)))
+    # if opt.preprocess == 'none':
+    #     transform_list.append(transforms.Lambda(lambda img: __make_power_2(img, base=4, method=method)))
 
     if not opt.no_flip:
         if params is None:
