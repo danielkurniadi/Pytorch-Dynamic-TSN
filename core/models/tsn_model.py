@@ -40,4 +40,5 @@ class TemporalSegmentNetwork(BaseModel):
         self.consensus_module = ConsensusModule(consensus_type)
         
     def prepare_model(self):
+        pass
         
