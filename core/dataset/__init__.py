@@ -13,6 +13,18 @@ See our template dataset class 'template_dataset.py' for more details.
 import importlib
 import torch.utils.data
 from core.dataset.base_dataset import BaseDataset
+# import defined dataset here
+from core.dataset.action_frame_dataset import (
+    RGBDataset,
+    FlowDataset,
+    RGBDiffDataset
+)
+# and also here
+DATASET_CLASSES = (
+    RGBDataset,
+    FlowDataset,
+    RGBDiffDataset
+)
 
 
 def find_dataset_using_name(dataset_name):
@@ -22,19 +34,20 @@ def find_dataset_using_name(dataset_name):
     be instantiated. It has to be a subclass of BaseDataset,
     and it is case-insensitive.
     """
-    dataset_filename = "core.dataset." + dataset_name + "_dataset"
-    datasetlib = importlib.import_module(dataset_filename)
+    # dataset_filename = "core.dataset." # + dataset_name + "_dataset"
+    # datasetlib = importlib.import_module(dataset_filename)
 
     dataset = None
     target_dataset_name = dataset_name.replace('_', '') + 'dataset'
-    for name, cls in datasetlib.__dict__.items():
+    for cls in DATASET_CLASSES:
+        name = cls.__name__
         if name.lower() == target_dataset_name.lower() \
            and issubclass(cls, BaseDataset):
             dataset = cls
 
     if dataset is None:
-        raise NotImplementedError("In %s.py, there should be a subclass of BaseDataset with "
-            "class name that matches %s in lowercase." % (dataset_filename, target_dataset_name))
+        raise NotImplementedError("Cannot find Dataset with "
+            "class name that matches %s in lowercase." % (target_dataset_name))
 
     return dataset
 
