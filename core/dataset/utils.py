@@ -18,8 +18,9 @@ def check_filepath(filepath):
 
 def read_strip_split_lines(filepath, sep=' '):
 	data_rows = []
-	with open(filepath, 'w') as f:
-		for line in f.readlines():
+	check_filepath(filepath)
+	with open(filepath, 'r') as f:
+		for line in f:
 			data_row = line.strip().split(sep)
 			if data_row:
 				data_rows.append(data_row)
