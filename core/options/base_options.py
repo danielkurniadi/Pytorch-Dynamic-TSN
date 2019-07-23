@@ -3,13 +3,14 @@ import sys
 import argparse
 
 # from core.config import (dataconf, logconf, checkpointconf)
-
+from core import models
+from core import dataset
 
 class BaseOptions(object):
     """This class defines options used during both training and test time.
 
     It also implements several helper functions such as parsing, printing, and saving the options.
-    It also gathers additional options defined in <modify_commandline_options> functions in both dataset class and model class.
+    It also gathers additional options defined in <modify_cli_options> functions in both dataset class and model class.
     """
 
     def __init__(self):
@@ -36,14 +37,14 @@ class BaseOptions(object):
         self.print_options(opts)
 
         # set gpu ids
-        str_ids = opts.gpu_ids.split(',')
-        opts.gpu_ids = []
-        for str_id in str_ids:
-            id = int(str_id)
-            if id >= 0:
-                opts.gpu_ids.append(id)
-        if len(opts.gpu_ids) > 0:
-            torch.cuda.set_device(opts.gpu_ids[0])
+        # str_ids = opts.gpu_ids.split(',')
+        # opts.gpu_ids = []
+        # for str_id in str_ids:
+        #     id = int(str_id)
+        #     if id >= 0:
+        #         opts.gpu_ids.append(id)
+        # if len(opts.gpu_ids) > 0:
+        #     torch.cuda.set_device(opts.gpu_ids[0])
 
         self.opts = opts
         return self.opts
@@ -68,8 +69,8 @@ class BaseOptions(object):
             help='Models are saved here')
 
         # ========================= Model Configs ==========================
-        parser.add_argument('--model', type=str, default='cycle_gan',
-            help='chooses which model to use. [tsn_model | resnext]')
+        parser.add_argument('--model', type=str, default='tsn',
+            help='chooses which model to use. [tsn | resnext101]')
         parser.add_argument('--n_classes', type=int, default=10,
             help='# of output target classes')
         parser.add_argument('--input_channels', type=int, default=3,
@@ -82,6 +83,8 @@ class BaseOptions(object):
             help='scaling factor for normal, xavier and orthogonal.')
 
         # ========================= Input Configs ==========================
+        parser.add_argument('--dataset_mode', type=str, default='RGB',
+            help='chooses how datasets are loaded. [RGB | RGBDiff | Flow | OpenPose]')
         parser.add_argument('-b', '--batch_size', type=int, default=32,
             help='Input batch size')
         parser.add_argument('--input_size', type=int, default=286,
@@ -128,11 +131,19 @@ class BaseOptions(object):
         opts, _ = parser.parse_known_args()
 
         # modify model-related parser options
-        parser = self.models.modify_cli_options(parser, is_train=True)
+        model_name = opts.model
+        model_option_setter = models.get_option_setter(model_name)
+        parser = model_option_setter(parser, is_train=self.isTrain)
         opts, _ = parser.parse_known_args()  # parse again with new defaults
 
         # modify dataset-related parser options
-        parser = self.dataset.modify_cli_options(parser, is_train=True)
+        dataset_name = opts.dataset_mode
+        dataset_option_setter = dataset.get_option_setter(dataset_name)
+        parser = dataset_option_setter(parser, is_train=self.isTrain)
+        opts, _ = parser.parse_known_args()  # parse again with new defaults
+
+        self.parser = parser
+        self.opts = opts
 
         return opts
 
@@ -144,7 +155,7 @@ class BaseOptions(object):
         """Print and save options
         It will print both current options and default values(if different).
         """
-        message += '----------------- Options ---------------\n'
+        message = '----------------- Options ---------------\n'
         for k, v in sorted(vars(opts).items()):
             comment = ''
             default = self.parser.get_default(k)
@@ -155,7 +166,7 @@ class BaseOptions(object):
         print(message)
 
         # save options setting to logging dir
-        if hasattr(opts, logging_dir):
+        if hasattr(opts, 'logging_dir'):
             if not os.path.isdir(opts.logging_dir):
                 raise FileNotFoundError("Logging Directory %s is not found" % opts.logging_dir)
             
