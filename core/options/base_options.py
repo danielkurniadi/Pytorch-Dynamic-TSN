@@ -6,6 +6,7 @@ import argparse
 from core import models
 from core import dataset
 
+
 class BaseOptions(object):
     """This class defines options used during both training and test time.
 
@@ -87,13 +88,15 @@ class BaseOptions(object):
             help='chooses how datasets are loaded. [RGB | RGBDiff | Flow | OpenPose]')
         parser.add_argument('-b', '--batch_size', type=int, default=32,
             help='Input batch size')
+        parser.add_argument('--max_dataset_size', type=int, default=float("inf"),
+            help='Maximum number of samples allowed per dataset. If the dataset directory contains more than max_dataset_size, only a subset is loaded.')
         parser.add_argument('--input_size', type=int, default=286,
             help='Scale images to this size')
-        parser.add_argument('--input_means', nargs='+', type=float, default=[0.5, 0.5, 0.5],
+        parser.add_argument('--input_means', action='append', nargs='+', type=float, default=[0.5, 0.5, 0.5],
             help='Input images means')
-        parser.add_argument('--input_range', nargs='+', type=float, default=[0, 1.0],
+        parser.add_argument('--input_range', action='append', nargs='+', type=float, default=[0, 1.0],
             help='Input images range')
-        parser.add_argument('--input_std', nargs='+', type=float, default=[0.25, 0.25, 0.25],
+        parser.add_argument('--input_std', action='append', nargs='+', type=float, default=[0.25, 0.25, 0.25],
             help='Input images standard deviation')
         parser.add_argument('--preprocess', type=str, default='resize_and_crop',
             help='scaling and cropping of images at load time [resize_and_crop | crop | scale_width | scale_width_and_crop | none]')
