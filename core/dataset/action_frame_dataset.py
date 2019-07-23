@@ -9,10 +9,10 @@ from PIL import Image
 import torchvision.transforms as transforms
 
 from core.dataset.base_dataset import SplitFileDataset
-from .utils import (
+from core.dataset.utils.videoframe import VideoFrameGenerator
+from core.dataset.utils import (
 	check_filepath,
-	read_strip_split_lines,
-	VideoFrameGenerator
+	read_strip_split_lines
 )
 
 
