@@ -1,38 +1,56 @@
 import os
 import time
 import shutil
+from core.options.train_options import (
+    BaseOptions,
+    TrainOptions
+)
 
-import torch
-import torchvision
-import torch.nn.parallel
-import torch.backends.cudnn as cudnn
-import torch.optim
-from torch.utils.data import Dataset, DataLoader
-from torchsummary import summary
+import argparse
 
-import pretrainedmodels
+def test_options_initialise_default():
+    print("-----------------------------------------------------")
+    print("Test: test_base_options_default")
+    parser1 = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    ) 
 
-from core.models import create_model
-from core.dataset import create_dataset
-from core.options.train_options import TrainOptions
+    print("- Initializing...")
+    base_options = BaseOptions()
+    parser1 = base_options.initialize()
+    
+    opts, _ = parser1.parse_known_args()
+    print("------------------Runtime Configs -------------------")
+    print(".. --name %s" %opts.name)
+    print(".. --gpu_ids %s" %opts.gpu_ids)
+    print(".. --serial_batches %s" %opts.serial_batches)
+    print(".. --num_threads %s" %opts.serial_batches)
+    print(".. --checkpoints_dir %s" %opts.checkpoint_dir)
+    
+    print("------------------- Model Configs -------------------")
+    print(".. --model %s" %opts.model)
+    print(".. --n_classes %s" %opts.n_classes)
+    print(".. --input_channels %s" %opts.input_channels)
+    print(".. --norm %s" %opts.norm)
+    print(".. --init_type %s" %opts.init_type)
+    print(".. --init_gain %s" %opts.init_gain)
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SPLITS_DIR = os.path.join(BASE_DIR, "data/splits/")
-CHECKPOINT_DIR = os.path.join(BASE_DIR, "checkpoints/")
+    print("------------------- Input Configs -------------------")
+    print(".. --dataset_mode %s" %opts.dataset_mode)
+    print(".. --batch_size %s" %opts.batch_size)
+    print(".. --input_size %s" %opts.input_size)
+    print(".. --input_range %s" %opts.input_means)
+    print(".. --input_std %s" %opts.input_std)
+    print(".. --preprocess %s" %opts.preprocess)
+    print(".. --crop_size %s" %opts.crop_size)
+    print(".. --no_flip %s" %opts.no_flip)
+
+    print("------------------ Additional Params ----------------")
+    print(".. --load_epoch %s" %opts.load_epoch)
+    print(".. --verbose %s" %opts.verbose)
+    print(".. --suffix %s" %opts.suffix)
 
 
-def update_learning_rate(optimizer, learning_rate):
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = learning_rate
 
-
-opts = TrainOptions().parse()
-# dataset = create_dataset(opts)
-# dataset_size = len(dataset)
-# print("The number of training images: %d" % dataset_size)
-
-model = create_model(opts)
-model.prepare_model()
-total_iters = 0
-
-
+if __name__ == '__main__':
+    test_options_initialise_default
