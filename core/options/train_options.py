@@ -14,8 +14,6 @@ class TrainOptions(BaseOptions):
             help='Frequency of saving checkpoints at the end of epochs')
         parser.add_argument('--continue_last', action='store_true',
             help='Continue training: load the latest model')
-        parser.add_argument('--phase', type=str, default='train',
-            help='Phases, choices: train/val/test')
         
         # ========================= Learning Configs ==========================
         parser.add_argument('--epochs', type=int, default=15,
