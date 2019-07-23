@@ -44,6 +44,7 @@ def find_dataset_using_name(dataset_name):
         if name.lower() == target_dataset_name.lower() \
            and issubclass(cls, BaseDataset):
             dataset = cls
+            break
 
     if dataset is None:
         raise NotImplementedError("Cannot find Dataset with "
