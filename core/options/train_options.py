@@ -26,7 +26,7 @@ class TrainOptions(BaseOptions):
             help='Initial learning rate for adam')
         parser.add_argument('--lr_policy', type=str, default='linear',
             help='Learning rate policy. [linear | step | plateau | cosine]')
-        parser.add_argument('--lr_decay_gamma', type=float, default=0.1,
+        parser.add_argument('--lr_decay_factor', type=float, default=0.1,
             help='Learning rate decay gamma/const')
         parser.add_argument('--lr_decay_iters', type=int, default=150,
             help='Multiply by a lr_decay_rate every <lr_decay_iters> iterations')
