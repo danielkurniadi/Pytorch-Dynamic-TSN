@@ -13,17 +13,21 @@ See our template dataset class 'template_dataset.py' for more details.
 import importlib
 import torch.utils.data
 from core.dataset.base_dataset import BaseDataset
-# import defined dataset here
+
+# Import defined dataset here
 from core.dataset.action_frame_dataset import (
     RGBDataset,
     FlowDataset,
     RGBDiffDataset
 )
-# and also here
+from core.dataset.image_dataset import ImageDataset
+
+# And also here
 DATASET_CLASSES = (
     RGBDataset,
     FlowDataset,
-    RGBDiffDataset
+    RGBDiffDataset,
+    ImageDataset
 )
 
 
@@ -59,7 +63,7 @@ def get_option_setter(dataset_name):
     return dataset_class.modify_cli_options
 
 
-def create_dataset(opts):
+def create_dataset(opts, *args):
     """Create a dataset given the option.
 
     This function wraps the class CustomDatasetDataLoader.
@@ -69,7 +73,8 @@ def create_dataset(opts):
         >>> from data import create_dataset
         >>> dataset = create_dataset(opt)
     """
-    data_loader = CustomDatasetDataLoader(opts)
+    
+    data_loader = CustomDatasetDataLoader(opts, *args)
     dataset = data_loader.load_data()
     return dataset
 
@@ -77,7 +82,7 @@ def create_dataset(opts):
 class CustomDatasetDataLoader():
     """Wrapper class of Dataset class that performs multi-threaded data loading"""
 
-    def __init__(self, opts):
+    def __init__(self, opts, *args):
         """Initialize this class
 
         Step 1: create a dataset instance given the name [dataset_mode]
@@ -85,7 +90,7 @@ class CustomDatasetDataLoader():
         """
         self.opts = opts
         dataset_class = find_dataset_using_name(opts.dataset_mode)
-        self.dataset = dataset_class(opts)
+        self.dataset = dataset_class(opts, *args)
         print("dataset [%s] was created" % type(self.dataset).__name__)
         self.dataloader = torch.utils.data.DataLoader(
             self.dataset,
@@ -97,12 +102,10 @@ class CustomDatasetDataLoader():
         return self
 
     def __len__(self):
-        """Return the number of data in the dataset"""
-        return min(len(self.dataset), self.opts.max_dataset_size)
+        """Return the number of dataset"""
+        return len(self.dataset)
 
     def __iter__(self):
         """Return a batch of data"""
         for i, data in enumerate(self.dataloader):
-            if i * self.opts.batch_size >= self.opts.max_dataset_size:
-                break
             yield data
