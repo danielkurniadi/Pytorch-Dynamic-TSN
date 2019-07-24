@@ -19,12 +19,15 @@ from core.dataset.utils import (
 class ActionFrameDataset(SplitFileDataset):
 	"""Action Frame Dataset which support generating data from pre-processed video frames.
 	
-	Video frames can be of extension .jpg, .png, .jpeg, etc. They represent frames from video rather than static images.
-	The splitfile here contains three columns: folder path, num_frames, and labels for video frames in a folder (each folder represent 1 video).
+	Video frames can be of extension .jpg, .png, .jpeg, etc. 
+	They represent frames from video rather than static images.
+	
+	The splitfile here contains three columns: folder path, num_frames, and labels 
+	for video frames in a folder (each folder represent 1 video).
 	"""
 
-	def __init__(self, opts):
-		super(ActionFrameDataset, self).__init__(opts)
+	def __init__(self, opts, split_file):
+		super(ActionFrameDataset, self).__init__(opts, split_file)
 		self.opts = opts
 		self.modality = self.opts.dataset_mode
 		self.new_length = self.opts.input_channels
@@ -48,9 +51,9 @@ class ActionFrameDataset(SplitFileDataset):
 
 	def __getitem__(self, index):
 		frame_generator = self.frame_generators[index]
-		imgs = list(frame_generator)
+		imgs, label = list(frame_generator)		# iterate frame_generator
 
-		return imgs
+		return imgs, label
 
 	#-----------------------
 	# Frames generator
