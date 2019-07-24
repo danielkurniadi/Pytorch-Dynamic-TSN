@@ -13,7 +13,8 @@ setup(
     ],
     entry_points = {
         'console_scripts' : [
-            'dataset=core.cli:dataset'
+            'dataset_cli=core.cli:dataset_cli',
+            'preprocess_cli=core.cli:preprocess_cli'
         ]
     },
 )
