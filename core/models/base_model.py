@@ -22,13 +22,9 @@ class BaseModel(nn.Module):
 		
 	.. forward: (overide)
 		Run forward pass for each base_network. This will be called by <optimize_parameters> and <test>
-	
-	.. optimize_parameters: (override)
-		Run backward prop, calculate loss, gradients, and update network weights.
-		Called for every iterations.
 
 	.. backward: (optional)
-		Implemented for modularity if backprop logic is complicated. Call this function in
+		Implemented for modularity if backprop logic requires modification. Call this function in
 		<optimize_parameters> if implemented.
 
 	.. modify_cli_options: (optional)
@@ -39,9 +35,10 @@ class BaseModel(nn.Module):
 
 	__abstract__ = True
 
-	def __init__(self):
+	def __init__(self, opts):
 		super(BaseModel, self).__init__()
 		self.model_name = self.__class__.__name__
+		self.opts = opts
 
 	@staticmethod
 	def modify_cli_options(parser, is_train=True):
@@ -79,12 +76,6 @@ class BaseModel(nn.Module):
 		------------------
 		.. output: torch-tensor | array-like
 			Outputs of shape (batch_size, n_class, ...)
-		"""
-		raise NotImplementedError
-
-	def optimize_parameters(self):
-		"""Run forward, calculate loss, gradients, and update network weights. 
-		Called for each iterations in train/val/test.
 		"""
 		raise NotImplementedError
 

@@ -16,7 +16,7 @@ import pretrainedmodels
 from .base_model import BaseModel
 
 
-class TemporalSegmentNetwork(BaseModel):
+class TSNModel(BaseModel):
     """ Temporal Segmentation Network
     """
     def __init__(self, num_classes, n_segments,
@@ -40,4 +40,5 @@ class TemporalSegmentNetwork(BaseModel):
         self.consensus_module = ConsensusModule(consensus_type)
         
     def prepare_model(self):
+        pass
         
