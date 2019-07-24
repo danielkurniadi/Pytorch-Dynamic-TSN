@@ -1,7 +1,7 @@
 import numpy as np
 from PIL import Image
 
-from .utils import (
+from core.dataset.utils import (
 	generate_sample_seg_indices,
 	generate_median_seg_indices,
 	load_rgb_image,
@@ -52,7 +52,7 @@ class VideoFrameGenerator(object):
 		videodata = self.load_video_frame(self._iter_count)
 		self._iter_count += 1
 
-		return videodata
+		return videodata, self.label
 
 	#-----------------------
 	# Indices handlers
