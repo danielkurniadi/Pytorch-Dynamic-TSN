@@ -95,7 +95,8 @@ def appx_rank_pooling(
     
     for class_folder in os.listdir(source):     # run appx rank pool for each video in all class_folder
         video_files = search_files_recursively(
-            os.path.join(source, class_folder)
+            os.path.join(source, class_folder),
+            by_extensions = video_extensions
         )
         outfolder = os.path.join(dest, class_folder)
 
