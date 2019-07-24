@@ -3,40 +3,30 @@ from PIL import Image
 
 from torchvision import transforms
 
-from core.dataset.base_dataset import PathLabelPairDataset
+# Dataset utilities
+from core.dataset.utils import (
+    load_rgb_image,
+    load_flow_image
+)
+from core.utils.file_system import(
+    search_files_recursively,
+)
+from core.dataset.utils import (
+    read_strip_split_lines,
+    expand_split_folders_to_filepaths,
+    load_rgb_image,
+    load_flow_image
+)
+from core.dataset.base_dataset import SplitFileDataset
 
 
-def clean(path_label_pairs):
-    cleaned = []
-    for line in path_label_pairs:
-        if len(line.strip().split()) != 2:
-            continue
-        cleaned.append(line)
-    return cleaned
+class ImageDataset(SplitFileDataset):
+    """
+    """
+    def __init__(self, opts, split_file):
+        super(ImageDataset, self).__init__(opts, split_file)
 
-
-class AggressionDataset(PathLabelPairDataset):
-
-    def __init__(self, opts):
-        """Dataset wrapper for Approximated Rank Pool images.
-        
-        Arguments:
-            - filepath (str): absolute path of txt file which contains paths_labels pairs
-            - preprocessing (arr of fn): preprocessing functions in array 
-            - input_mean (arr): input mean in array-like/tuples, must has same length as the input channels(e.g RGB: 3 channels)
-            - input_std (arr): input standard dev in array-like/tuples, must has same length as the input channels (e.g RGB: 3 channels) 
-        """
-        super(AggressionDataset, self).__init__(opts)
-        self.filepath = opts.pathlabel_pair_file
-        AggressionDataset.check_path_label_pair_file(self.filepath)
-        
-        # read files and get file paths (dataset)
-        with open(self.filepath, 'r') as fp:
-            self.path_label_pairs = fp.readlines()
-        
-        self.path_label_pairs = clean(self.path_label_pairs)
-
-        # prepare image preprocessings and transforms
+        self.metadata = expand_split_folders_to_filepaths(self.lines)
         self.transforms = transforms.Compose([
             transforms.Resize(self.opts.input_size),
             transforms.CenterCrop(self.opts.input_size),
@@ -44,11 +34,17 @@ class AggressionDataset(PathLabelPairDataset):
             transforms.Normalize(self.opts.input_means, self.opts.input_std)
         ])
 
-    def __getitem__(self, i):
-        path, label = self.path_label_pairs[i].strip().split()
-        img = Image.open(path)
+    @staticmethod
+    def modify_cli_options(parser, is_train):
+        parser = SplitFileDataset.modify_cli_options(parser, is_train)
+        return parser
+
+    def __getitem__(self, index):
+        filepath, label = self.metadata[index]
+        img = load_rgb_image(filepath)
         img = self.transforms(img)
-        return img, int(label)
+
+        return img, label
 
     def __len__(self):
-        return len(self.path_label_pairs)
+        return len(self.metadata)
