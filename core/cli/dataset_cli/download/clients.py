@@ -2,7 +2,7 @@ import os
 import requests
 import warnings
 
-import kaggle
+# import kaggle
 
 
 def download_file(url):
@@ -69,7 +69,7 @@ class Kaggle(DataAPIClient):
         self,
         dataset,
         save_folder,
-        credential_file = None),
+        credential_file = None,
         unzip = True
     ):  
         if credential_file:
@@ -79,7 +79,7 @@ class Kaggle(DataAPIClient):
             dataset, save_folder, KAGGLE_JSON_PATH, unzip
         )
 
-    def __call__(self):
+    def download(self):
         if not os.path.isfile(self.credential_file):
             # check if kaggle file exists
             warnings.warn("- Kaggle Credential File (kaggle.json) not found." 
