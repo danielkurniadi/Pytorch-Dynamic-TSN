@@ -1,4 +1,5 @@
 import os
+import glob
 from pathlib import Path
 
 import click
@@ -78,7 +79,7 @@ Example folder structure:
 @click.command()
 @click.argument(
     'dataset_dir',
-    envvar = 'DATA_DIR',
+    envvar = 'DATASET_DIR',
     type = click.Path(
         exists=True, dir_okay=True, file_okay=False
     )
@@ -97,7 +98,7 @@ Example folder structure:
 )
 @click.option(
     '--out_prefix',
-    default = ''
+    default = '',
     type = click.STRING
 )
 def stratified_shuffle_split_folderset(

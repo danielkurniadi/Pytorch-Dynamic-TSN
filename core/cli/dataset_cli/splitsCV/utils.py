@@ -1,6 +1,7 @@
 import os
 import glob
 
+import numpy as np
 from sklearn.model_selection import StratifiedShuffleSplit
 
 
@@ -14,6 +15,9 @@ def train_test_split(
     test_size = 0.1,
     random_state = 42
 ):
+    all_paths = np.array(all_paths)
+    all_labels = np.array(all_labels)
+
     sss = StratifiedShuffleSplit(n_splits=1, test_size=test_size)
     train_idx, test_idx = next(iter(sss.split(all_paths, all_labels)))
 
@@ -36,14 +40,16 @@ def append_metadata_to_split_file(
     elif split_type == 'folder':
         data_num_frames = []
         
-        for data_path in data_paths
+        for data_path in data_paths:
             num_frames = len([
-                file for file in os.listdir()
-                if os.path.isfile(os.path.join(data_path, file))
+                file for file in glob.glob(data_path + '/*')
+                if os.path.isfile(file)
             ])
-        
+
             if num_frames == 0:
-                print("Danger! Folder split has num frames == zero for %s" % data_path)
+                print(".. Folder split has num frames == zero for %s, skipping..." % data_path)
+                continue
+
             data_num_frames.append(num_frames)
 
         to_tmpl = "{} {} {}\n"
