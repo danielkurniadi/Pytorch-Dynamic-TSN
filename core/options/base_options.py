@@ -71,7 +71,9 @@ class BaseOptions(object):
 
         # ========================= Model Configs ==========================
         parser.add_argument('--model', type=str, default='tsn',
-            help='chooses which model to use. [tsn | resnext101]')
+            help='Chooses which model to use. [tsn | resnext101]')
+        parser.add_argument('--pretrained', type=str, default='imagenet',
+            help='Chooses pretrained weights')
         parser.add_argument('--n_classes', type=int, default=10,
             help='# of output target classes')
         parser.add_argument('--input_channels', type=int, default=3,
@@ -79,13 +81,13 @@ class BaseOptions(object):
         parser.add_argument('--norm', type=str, default='instance',
             help='instance normalization or batch normalization [instance | batch | none]')
         parser.add_argument('--init_type', type=str, default='normal',
-            help='network initialization [normal | xavier | kaiming | orthogonal]')
+            help='Network initialization [normal | xavier | kaiming | orthogonal]')
         parser.add_argument('--init_gain', type=float, default=0.02,
-            help='scaling factor for normal, xavier and orthogonal.')
+            help='Scaling factor for normal, xavier and orthogonal.')
 
         # ========================= Input Configs ==========================
-        parser.add_argument('--dataset_mode', type=str, default='RGB',
-            help='chooses how datasets are loaded. [RGB | RGBDiff | Flow | OpenPose]')
+        parser.add_argument('--dataset_mode', type=str, default='Image',
+            help='Chooses how datasets are loaded. [Image | RGB | RGBDiff | Flow | OpenPose]')
         parser.add_argument('-b', '--batch_size', type=int, default=32,
             help='Input batch size')
         parser.add_argument('--max_dataset_size', type=int, default=float("inf"),
@@ -99,7 +101,7 @@ class BaseOptions(object):
         parser.add_argument('--input_std', action='append', nargs='+', type=float, default=[0.25, 0.25, 0.25],
             help='Input images standard deviation')
         parser.add_argument('--preprocess', type=str, default='resize_and_crop',
-            help='scaling and cropping of images at load time [resize_and_crop | crop | scale_width | scale_width_and_crop | none]')
+            help='Scaling and cropping of images at load time [resize_and_crop | crop | scale_width | scale_width_and_crop | none]')
         parser.add_argument('--crop_size', type=int, default=256,
             help='Then crop to this size')
         parser.add_argument('--no_flip', action='store_true',
