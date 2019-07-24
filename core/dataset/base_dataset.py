@@ -72,9 +72,9 @@ class SplitFileDataset(BaseDataset):
 	image/video data.
 	"""
 
-	def __init__(self, opts):
-		super(SplitFileDataset, self).__init__(opts)
-		self.split_file = opts.split_file
+	def __init__(self, opts, split_file):
+		self.opts = opts
+		self.split_file = split_file
 		self.lines = read_strip_split_lines(self.split_file)
 
 	@staticmethod
@@ -88,8 +88,12 @@ class SplitFileDataset(BaseDataset):
 		Returns:
 			the modified parser.
 		"""
-		parser.add_argument('--split_file', type=str, default='default_train_split_0.txt',
-			help='Path to split textfile. See /docs/README.md#Dataset about split file')
+		parser.add_argument('--train_split_file', type=str, default='default_train_split_0.txt',
+			help='Path to train split textfile. See /docs/README.md#Dataset about split file')
+		parser.add_argument('--val_split_file', type=str, default='default_val_split_0.txt',
+			help='Path to train split textfile. See /docs/README.md#Dataset about split file')
+		parser.add_argument('--test_split_file', type=str, default='default_test_split_0.txt',
+			help='Path to train split textfile. See /docs/README.md#Dataset about split file')
 
 		return parser
 
