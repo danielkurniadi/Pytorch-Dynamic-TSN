@@ -14,22 +14,6 @@ import importlib
 import torch.utils.data
 from core.dataset.base_dataset import BaseDataset
 
-# Import defined dataset here
-from core.dataset.action_frame_dataset import (
-    RGBDataset,
-    FlowDataset,
-    RGBDiffDataset
-)
-from core.dataset.image_dataset import ImageDataset
-
-# And also here
-DATASET_CLASSES = (
-    RGBDataset,
-    FlowDataset,
-    RGBDiffDataset,
-    ImageDataset
-)
-
 
 def find_dataset_using_name(dataset_name):
     """Import the module "data/[dataset_name]_dataset.py".
@@ -38,12 +22,12 @@ def find_dataset_using_name(dataset_name):
     be instantiated. It has to be a subclass of BaseDataset,
     and it is case-insensitive.
     """
-    # dataset_filename = "core.dataset." # + dataset_name + "_dataset"
-    # datasetlib = importlib.import_module(dataset_filename)
+    dataset_filename = "core.dataset." + dataset_name + "_dataset"
+    datasetlib = importlib.import_module(dataset_filename)
 
     dataset = None
     target_dataset_name = dataset_name.replace('_', '') + 'dataset'
-    for cls in DATASET_CLASSES:
+    for cls in datasetlib.__dict__.items():
         name = cls.__name__
         if name.lower() == target_dataset_name.lower() \
            and issubclass(cls, BaseDataset):
@@ -66,7 +50,7 @@ def get_option_setter(dataset_name):
 def create_dataset(opts, *args):
     """Create a dataset given the option.
 
-    This function wraps the class CustomDatasetDataLoader.
+    This function wraps the class DatasetLoader.
         This is the main interface between this package and 'train.py'/'test.py'
 
     Example:
@@ -74,12 +58,12 @@ def create_dataset(opts, *args):
         >>> dataset = create_dataset(opt)
     """
     
-    data_loader = CustomDatasetDataLoader(opts, *args)
+    data_loader = DatasetLoader(opts, *args)
     dataset = data_loader.load_data()
     return dataset
 
 
-class CustomDatasetDataLoader():
+class DatasetLoader():
     """Wrapper class of Dataset class that performs multi-threaded data loading"""
 
     def __init__(self, opts, *args):
@@ -107,5 +91,5 @@ class CustomDatasetDataLoader():
 
     def __iter__(self):
         """Return a batch of data"""
-        for i, data in enumerate(self.dataloader):
+        for data in (self.dataloader):
             yield data
