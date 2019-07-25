@@ -2,7 +2,6 @@ import re
 import sys
 import argparse
 
-# from core.config import (dataconf, logconf, checkpointconf)
 from core import models
 from core import dataset
 
@@ -58,8 +57,8 @@ class BaseOptions(object):
         """ Define all options by adding arguments to argparser
         """
         # ========================= Runtime Configs ==========================
-        parser.add_argument('--name', type=str, default='<EXPERIMENT_NAME>', 
-            help='Descriptive name of running experiment. Used for name prefix when storing artifacts')
+        parser.add_argument('--name', type=str, default='', 
+            help='Descriptive name of ongoing experiment. Used for name prefix when storing artifacts')
         parser.add_argument('--gpu_ids', type=str, default='0',
             help='GPU ids: e.g. 0,1,2; use -1 for CPU')
         parser.add_argument('--serial_batches', action='store_true',
@@ -85,9 +84,17 @@ class BaseOptions(object):
         parser.add_argument('--init_gain', type=float, default=0.02,
             help='Scaling factor for normal, xavier and orthogonal.')
 
+        # ========================= Data Configs ==========================
+        parser.add_argument('--split_dir', type=str, required=True,
+            help='Path to split directory where split files are')
+        parser.add_argument('--split_idx', type=int, required=True,
+            help='Split index, also known as "k" in KFold technique')
+        parser.add_argument('--dataset_mode', type=str, default='Frame',
+            help='Chooses how datasets are loaded. [Frame | Temporal]')
+        parser.add_argument('--img_ext', type=str, default='.png',
+            help='File extension of images. [.png | .jpeg | .jpg]')
+
         # ========================= Input Configs ==========================
-        parser.add_argument('--dataset_mode', type=str, default='Image',
-            help='Chooses how datasets are loaded. [Image | RGB | RGBDiff | Flow | OpenPose]')
         parser.add_argument('-b', '--batch_size', type=int, default=32,
             help='Input batch size')
         parser.add_argument('--max_dataset_size', type=int, default=float("inf"),
