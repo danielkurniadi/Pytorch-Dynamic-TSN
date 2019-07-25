@@ -9,14 +9,37 @@ from sklearn.model_selection import StratifiedShuffleSplit
 # Helpers
 #------------------------
 
+def get_path_label_list(
+    dataset_dir
+):
+    """List paths and labels of all data in a directory.
+    This assumes that all data are located at 2 levels below the directory (after class_folder)
+    """
+    all_paths, all_labels = [], []      # place holder for all data in directory
+
+    class_folders = filter(
+        os.path.isdir,
+        glob.glob(dataset_dir + '/*')   # get class folders' paths
+    )
+
+    for label, class_folder in enumerate(class_folders):    # label encode using for-loop index
+        data_paths = glob.glob(class_folder + '/*')         # get subfolders in each class folder
+        data_labels = [label] * len(data_paths)
+        
+        all_paths.extend(data_paths)        # add those subfolders to list
+        all_labels.extend(data_labels)      # add labels to list
+
+    return all_paths, all_labels
+
+
 def train_test_split(
     all_paths,
     all_labels,
     test_size = 0.1,
     random_state = 42
 ):
-    all_paths = np.array(all_paths)
-    all_labels = np.array(all_labels)
+    all_paths = np.array(all_paths)     # convert to numpy to ease multi-indexing
+    all_labels = np.array(all_labels)   # convert to numpy to ease multi-indexing
 
     sss = StratifiedShuffleSplit(n_splits=1, test_size=test_size)
     train_idx, test_idx = next(iter(sss.split(all_paths, all_labels)))
@@ -27,37 +50,43 @@ def train_test_split(
     )
 
 
-def append_metadata_to_split_file(
+def write_metadata_to_split_file(
     outfile,
     data_paths,
     data_labels,
-    split_type = 'file',
+    split_type = 'II',
 ):
-    if split_type == 'file':
+    """Write all metadata to a file
+    """
+    if split_type in ['I', 'i', 1]:
+        # data is represented by a file
         to_tmpl = "{} {}\n"
         to_writes = zip(data_paths, data_labels)
 
-    elif split_type == 'folder':
+    elif split_type in ['II', 'ii', 2]:
+        # data is represented by a (sub)folder
         data_num_frames = []
-        
         for data_path in data_paths:
             num_frames = len([
                 file for file in glob.glob(data_path + '/*')
                 if os.path.isfile(file)
             ])
-
             if num_frames == 0:
-                print(".. Folder split has num frames == zero for %s, skipping..." % data_path)
+                # TODO: use warn.warnings
+                print(
+                    ".. Folder split has num frames == zero for %s" 
+                    "skipping..." % data_path
+                )
                 continue
-
             data_num_frames.append(num_frames)
 
         to_tmpl = "{} {} {}\n"
         to_writes = zip(data_paths, data_num_frames, data_labels)
     
     with open(outfile, 'w+') as fp:
-        for metadata in to_writes:
-            fp.write(to_tmpl.format(*metadata))
+        # write or create mode
+        for to_write in to_writes:
+            fp.write(to_tmpl.format(*to_write))
 
 
 #------------------------
@@ -73,17 +102,21 @@ def generate_skf_split_files(
     out_prefix = "",
     n_splits = 5
 ):
-    """Generaterate Shuffled-Stratified K Fold split given paths and label to dataset.
+    """
+    Generaterate Shuffled-Stratified K Fold split 
+    given paths and label to dataset.
     """
     if include_test_split:
+        # if True, split data to train, val, test. 
+        # otherwise just train and val split
         test_splitname = '{}_test_split.txt'.format(out_prefix)
         test_splitpath = os.path.join(outdir, test_splitname)
 
         all_train_paths, all_test_paths, all_train_labels, all_test_labels =  train_test_split(
             all_paths, all_labels, test_size = 0.1, random_state = 42
         )
-        
-        append_metadata_to_split_file(
+        # writing metadata for test split
+        write_metadata_to_split_file(
             test_splitpath,
             all_test_paths,
             all_test_labels,
@@ -91,6 +124,8 @@ def generate_skf_split_files(
         )
 
     else:
+        # here, we consider train and val as part of training 
+        # (a.k.a development) phase, hence the naming below for paths & label
         all_train_paths, all_train_labels = all_paths, all_labels
 
     # stratify dataset on train and validation
@@ -107,7 +142,8 @@ def generate_skf_split_files(
         train_splitname = "{}_train_split_{}.txt".format(out_prefix, i)
         train_splitpath = os.path.join(outdir, train_splitname) 
 
-        append_metadata_to_split_file(
+        # writing metadata for training split
+        write_metadata_to_split_file(
             train_splitpath,
             X_train,
             y_train,
@@ -121,7 +157,8 @@ def generate_skf_split_files(
         val_splitname = "{}_val_split_{}.txt".format(out_prefix, i)
         val_splitpath = os.path.join(outdir, val_splitname) 
 
-        append_metadata_to_split_file(
+        # writing metadata for validation split
+        write_metadata_to_split_file(
             val_splitpath,
             X_val,
             y_val,
