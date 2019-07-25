@@ -8,7 +8,8 @@ from core.cli.dataset_cli import (
     api_download,
     url_download,
     # Split dataset
-    stratified_shuffle_split_folderset
+    skf_split_metadataI,
+    skf_split_metadataII
 )
 from core.cli.preprocess_cli import (
     # Approx rank pool preprocessing
@@ -24,7 +25,7 @@ def dataset_cli():
 
 dataset_cli.add_command(api_download)
 dataset_cli.add_command(url_download)
-dataset_cli.add_command(stratified_shuffle_split_folderset)
+dataset_cli.add_command(skf_split_metadataII)
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
