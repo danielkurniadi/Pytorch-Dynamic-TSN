@@ -125,7 +125,7 @@ for epoch in range(epochs):
                 val_acc = torch.mean((preds == labels.data).float())
                 
                 running_val_acc += val_acc
-                running_val_loss += val_loss
+                running_val_loss += val_loss.data
 
         # average acc and loss over 1 epoch
         running_acc = running_acc / len(train_dataset) * batch_size
@@ -149,3 +149,39 @@ for epoch in range(epochs):
 print("----------------------------------------------------------------------------------------")
 print("TESTING SESSION:")
 print('*' * 100)
+
+test_dataset = create_dataset(opt, opt.test_split_file)    # create train dataset given opt.dataset_mode and other options
+test_dataset_size = len(test_dataset)    # get the number of images in the dataset.
+
+print('The number of testing images = %d' % test_dataset)
+
+running_acc = 0.0
+running_loss = 0.0
+
+for i, (data, labels) in enumerate(test_dataset):
+    if torch.cuda.is_available():
+        data = data.cuda()
+        labels = labels.cuda()
+
+    with torch.no_grad():
+        outputs = model(data)
+        loss = model.criterion(outputs, labels)
+
+        # evaluate model
+        _, preds = torch.max(outputs.data, 1)
+        acc = torch.mean((preds == labels.data).float())
+        
+        running_acc += acc
+        running_loss += loss.data
+
+# average acc and loss over 1 epoch
+running_acc = running_acc / len(test_dataset) * batch_size
+running_loss = running_loss / len(test_dataset) * batch_size
+
+avg_log_tmpl = (
+    ".. Test Avg Acc: {:2.4f} Test Avg Loss: {:2.4f} "
+)
+
+print(avg_log_tmpl.format(
+    running_acc, running_loss,
+))
