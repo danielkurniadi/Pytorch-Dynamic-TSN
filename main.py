@@ -153,7 +153,7 @@ print('*' * 100)
 test_dataset = create_dataset(opt, opt.test_split_file)    # create train dataset given opt.dataset_mode and other options
 test_dataset_size = len(test_dataset)    # get the number of images in the dataset.
 
-print('The number of testing images = %d' % test_dataset)
+print('The number of testing images = %d' % len(test_dataset))
 
 running_acc = 0.0
 running_loss = 0.0
