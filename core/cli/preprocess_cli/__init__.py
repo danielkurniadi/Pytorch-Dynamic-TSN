@@ -29,7 +29,12 @@ Apply approximated rank pooling algorithm to convert video frames
 into a video representation
 """
 
-def run_appx_rank_pooling(video_path, outdir, buffer_size=25):
+def run_appx_rank_pooling(
+    video_path,
+    outdir,
+    buffer_size=25,
+    img_name_tmpl='arp_rgb_{:05d}.png'
+):
     """Run ARP function.
     """
 
@@ -47,7 +52,7 @@ def run_appx_rank_pooling(video_path, outdir, buffer_size=25):
             frames = buffer.clear()
             rank_pooled = cvApproxRankPooling(frames)
             
-            image_name = "img_{:05d}.png".format(buffer.batch_count)
+            image_name = img_name_tmpl.format(buffer.batch_count)
             outpath = os.path.join(outdir, image_name)
             
             print(".. Writing to %s" % outpath)
@@ -69,8 +74,8 @@ def run_appx_rank_pooling(video_path, outdir, buffer_size=25):
     type = click.Path(exists=False, dir_okay=True)
 )
 @click.option(
-    '--img_name_prefix',
-    default = 'arp_rgb_{}',
+    '--img_name_tmpl',
+    default = 'img_{:05d}.png',
     type = click.STRING
 )
 @click.option(
@@ -82,7 +87,7 @@ def run_appx_rank_pooling(video_path, outdir, buffer_size=25):
 def appx_rank_pooling(
     source,
     dest,
-    img_name_prefix,
+    img_name_tmpl
     n_jobs
 ):
     """
@@ -105,9 +110,7 @@ def appx_rank_pooling(
         # take only the basename of each video url, clean name from dot and whitespace
         # and use this basename for output image name
         outpaths = [
-            os.path.join(outfolder, img_name_prefix.format(
-                clean_filename(get_basename(video))
-            ))
+            os.path.join(outfolder, clean_filename(get_basename(video)))
             for video in video_files
         ]
 
