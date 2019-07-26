@@ -65,23 +65,23 @@ def write_metadata_to_split_file(
 
     elif split_type in ['II', 'ii', 2]:
         # data is represented by a (sub)folder
-        data_num_frames = []
+        num_frames_list = []
         for data_path in data_paths:
-            num_frames = len([
-                file for file in glob.glob(data_path + '/*')
-                if os.path.isfile(file)
-            ])
-            if num_frames == 0:
+            abs_path = os.path.abspath(data_path)
+            files = os.listdir(abs_path)
+
+            if not files:
                 # TODO: use warn.warnings
                 print(
-                    ".. Folder split has num frames == zero for %s" 
-                    "skipping..." % data_path
+                    ".. Folder split has num frames == zero for %s; " 
+                    "Skipping..." % abs_path
                 )
                 continue
-            data_num_frames.append(num_frames)
+            num_frames = len(files)
+            num_frames_list.append(num_frames)
 
         to_tmpl = "{} {} {}\n"
-        to_writes = zip(data_paths, data_num_frames, data_labels)
+        to_writes = zip(data_paths, num_frames_list, data_labels)
     
     with open(outfile, 'w+') as fp:
         # write or create mode
