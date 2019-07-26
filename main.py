@@ -12,14 +12,14 @@ from torchsummary import summary
 
 import pretrainedmodels
 
-from core.dataset import create_dataset
+from core.dataset import create_dataset_loader
 from core.models import create_model
 from core.options.train_options import TrainOptions
 
 
 opt = TrainOptions().parse()   # get training options
-train_dataset = create_dataset(opt, opt.train_split_file)   # create train dataset given opt.dataset_mode and other options
-val_dataset = create_dataset(opt, opt.val_split_file)      # create val dataset given opt.dataset_mode and other options
+train_dataset = create_dataset_loader(opt, phase='train')      # create train dataset given opt.dataset_mode and other options
+val_dataset = create_dataset_loader(opt, phase='val')          # create val dataset given opt.dataset_mode and other options
 
 train_dataset_size = len(train_dataset)    # get the number of images in the dataset.
 val_dataset_size = len(val_dataset)    # get the number of images in the dataset.
@@ -150,7 +150,7 @@ print("-------------------------------------------------------------------------
 print("TESTING SESSION:")
 print('*' * 100)
 
-test_dataset = create_dataset(opt, opt.test_split_file)    # create train dataset given opt.dataset_mode and other options
+test_dataset = create_dataset_loader(opt, phase='test')    # create train dataset given opt.dataset_mode and other options
 test_dataset_size = len(test_dataset)    # get the number of images in the dataset.
 
 print('The number of testing images = %d' % len(test_dataset))
