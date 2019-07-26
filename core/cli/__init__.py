@@ -26,6 +26,7 @@ def dataset_cli():
 dataset_cli.add_command(api_download)
 dataset_cli.add_command(url_download)
 dataset_cli.add_command(skf_split_metadataII)
+dataset_cli.add_command(skf_split_metadataI)
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)

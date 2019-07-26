@@ -89,6 +89,8 @@ class BaseOptions(object):
             help='Path to split directory where split files are')
         parser.add_argument('--split_idx', type=int, required=True,
             help='Split index, also known as "k" in KFold technique')
+        parser.add_argument('--metadata_type', type=str, default='II',
+            help='Type of metadata.')
         parser.add_argument('--dataset_mode', type=str, default='Frame',
             help='Chooses how datasets are loaded. [Frame | Temporal]')
         parser.add_argument('--img_ext', type=str, default='.png',
