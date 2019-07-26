@@ -22,13 +22,12 @@ def find_dataset_using_name(dataset_name):
     be instantiated. It has to be a subclass of BaseDataset,
     and it is case-insensitive.
     """
-    dataset_filename = "core.dataset." + dataset_name + "_dataset"
+    dataset_filename = "core.dataset." + dataset_name.lower() + "_dataset"
     datasetlib = importlib.import_module(dataset_filename)
 
     dataset = None
     target_dataset_name = dataset_name.replace('_', '') + 'dataset'
-    for cls in datasetlib.__dict__.items():
-        name = cls.__name__
+    for name, cls in datasetlib.__dict__.items():
         if name.lower() == target_dataset_name.lower() \
            and issubclass(cls, BaseDataset):
             dataset = cls
@@ -47,18 +46,18 @@ def get_option_setter(dataset_name):
     return dataset_class.modify_cli_options
 
 
-def create_dataset(opts, *args):
+def create_dataset_loader(opts, phase):
     """Create a dataset given the option.
 
     This function wraps the class DatasetLoader.
         This is the main interface between this package and 'train.py'/'test.py'
 
     Example:
-        >>> from data import create_dataset
-        >>> dataset = create_dataset(opt)
+        >>> from data import create_dataset_loader
+        >>> dataset = create_dataset_loader(opt)
     """
     
-    data_loader = DatasetLoader(opts, *args)
+    data_loader = DatasetLoader(opts, phase)
     dataset = data_loader.load_data()
     return dataset
 
@@ -66,7 +65,7 @@ def create_dataset(opts, *args):
 class DatasetLoader():
     """Wrapper class of Dataset class that performs multi-threaded data loading"""
 
-    def __init__(self, opts, *args):
+    def __init__(self, opts, phase='train'):
         """Initialize this class
 
         Step 1: create a dataset instance given the name [dataset_mode]
@@ -74,7 +73,7 @@ class DatasetLoader():
         """
         self.opts = opts
         dataset_class = find_dataset_using_name(opts.dataset_mode)
-        self.dataset = dataset_class(opts, *args)
+        self.dataset = dataset_class(opts, phase)
         print("dataset [%s] was created" % type(self.dataset).__name__)
         self.dataloader = torch.utils.data.DataLoader(
             self.dataset,
