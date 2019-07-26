@@ -32,8 +32,8 @@ into a video representation
 def run_appx_rank_pooling(
     video_path,
     outdir,
-    buffer_size=25,
-    img_name_tmpl='arp_rgb_{:05d}.png'
+    buffer_size=10,
+    img_name_tmpl='img_{:05d}.png'
 ):
     """Run ARP function.
     """
@@ -87,7 +87,7 @@ def run_appx_rank_pooling(
 def appx_rank_pooling(
     source,
     dest,
-    img_name_tmpl
+    img_name_tmpl,
     n_jobs
 ):
     """
