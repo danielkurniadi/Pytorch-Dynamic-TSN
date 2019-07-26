@@ -40,10 +40,14 @@ class BaseDataset(data.Dataset, ABC):
 		# Warning! : Use your (previous) [--out_prefix] options in <split_cli>
 		# to specify [--name] options when training
 		self.split_idx = opts.split_idx
+		if phase in ['train', 'val']:
+			split_filename = "{}_{}_split_{}.txt".format(
+				opts.name, phase, self.split_idx)
+		else:
+			split_filename = "{}_{}_split.txt"
+
 		self.split_file = os.path.join(
-			opts.split_dir,
-			"{}_{}_split_{}.txt".format(opts.name, phase, self.split_idx)
-		)
+			opts.split_dir, split_filename)
 
 		# obtain metadata from split file
 		self.metadata = read_strip_split_lines(self.split_file)
