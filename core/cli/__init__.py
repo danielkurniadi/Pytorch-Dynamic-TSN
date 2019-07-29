@@ -4,10 +4,15 @@ import click
 from click import echo
 
 from core.cli.dataset_cli import (
+    # Download dataset
     api_download,
-    url_download
+    url_download,
+    # Split dataset
+    skf_split_metadataI,
+    skf_split_metadataII
 )
 from core.cli.preprocess_cli import (
+    # Approx rank pool preprocessing
     appx_rank_pooling
 )
 
@@ -20,6 +25,8 @@ def dataset_cli():
 
 dataset_cli.add_command(api_download)
 dataset_cli.add_command(url_download)
+dataset_cli.add_command(skf_split_metadataII)
+dataset_cli.add_command(skf_split_metadataI)
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)

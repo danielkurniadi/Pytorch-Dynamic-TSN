@@ -8,6 +8,10 @@ from numpy.random import randint
 
 from PIL import Image
 
+from core.utils.file_system import (
+	search_files_recursively,
+)
+
 
 #-----------------------
 # Files
@@ -29,6 +33,26 @@ def read_strip_split_lines(filepath, sep=' '):
 			if data_row:
 				data_rows.append(data_row)
 	return data_rows
+
+
+def expand_split_folders_to_filepaths(
+	split_list,
+	label_idx = -1,
+):
+	"""
+	"""
+	filepaths, newlabels = [], []
+	for metadata in split_list:
+		folder_path = metadata[0]	# by convention, any path to dataset is put in first column
+		label = int(metadata[label_idx])
+
+		files = search_files_recursively(folder_path)
+		labels = [label] * len(files)
+		
+		filepaths.extend(files)
+		newlabels.extend(labels)
+
+	return list(zip(filepaths, newlabels))
 
 
 #-----------------------
@@ -68,7 +92,7 @@ def generate_median_seg_indices(n_segments, n_frames, new_length):
 def load_rgb_image(filepath):
 	"""
 	"""
-	return Image(filepath).convert('RGB')
+	return Image.open(filepath).convert('RGB')
 
 
 def load_flow_image(x_img_path, y_img_path):

@@ -24,7 +24,8 @@ class ResnextModel(BaseModel):
         self.n_classes = opts.n_classes
         self.opts = opts
         
-        self.pretrained = False
+        self.pretrained = opts.pretrained
+        self.cardinality = opts.cardinality
 
         self.prepare_model()
 
@@ -62,24 +63,25 @@ class ResnextModel(BaseModel):
         """ Prepare necessary step.
 		Configure model, layers, and hyperparams settings.
         """
-        if self.pretrained:
-            if cardinality=='32x4d':
-                self.model = pretrainedmodels.__dict__['resnext101_32x4d'](
-                    num_classes=1000, pretrained='imagenet'
-                )
-            elif cardinality=='64x4d':
-                self.model = pretrainedmodels.__dict__['resnext101_64x4d'](
-                    num_classes=1000, pretrained='imagenet'
-                )
-            else:
-                raise ValueError("Invalid Cardinality %s" % cardinality)
-            self.model.last_layer_name = 'last_linear'
+        if self.cardinality=='32x4d':
+            self.model = pretrainedmodels.__dict__['resnext101_32x4d'](
+                num_classes=1000, pretrained=self.pretrained
+            )
+        elif self.cardinality=='64x4d':
+            self.model = pretrainedmodels.__dict__['resnext101_64x4d'](
+                num_classes=1000, pretrained=self.pretrained
+            )
         else:
-            self.model = torchvision.models.resnet18(pretrained=False)
-            self.model.last_layer_name = 'fc'
+            raise ValueError("Invalid Cardinality %s" % cardinality)
+        self.model.last_layer_name = 'last_linear'
+
         # last fully-connected linear
         num_feats = getattr(self.model, self.model.last_layer_name).in_features
-        setattr(self.model, self.model.last_layer_name, torch.nn.Linear(num_feats, self.opts.n_classes))
+        setattr(
+            self.model,
+            self.model.last_layer_name,
+            torch.nn.Linear(num_feats, self.opts.n_classes)
+        )
 
     @staticmethod
     def modify_cli_options(parser, is_train=True):
@@ -93,6 +95,8 @@ class ResnextModel(BaseModel):
             input_means = [0.485, 0.456, 0.406],
             input_std = [0.229, 0.224, 0.225]
         )
+        parser.add_argument('--cardinality', type=str, default='32x4d',
+            help='Cardinality of Resnext model')
 
         return parser
 
@@ -105,15 +109,3 @@ class ResnextModel(BaseModel):
         """
         return self.model(X)
 
-    def optimize_parameters(self):
-        """Calling forward pass, loss, optim steps, and backward prop.
-        """
-        outputs = self.forward(X)
-        
-        # calculate loss
-        loss = self.criterion(outputs, labels)
-        loss.backward()
-
-        self.optimizer.step()
-
-        return outputs, loss

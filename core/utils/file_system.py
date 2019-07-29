@@ -20,20 +20,6 @@ def safe_mkdir(directory):
 # Search
 #-----------------------
 
-def abs_listdir(directory):
-    """
-    Parameters:
-        .. directory (string)
-    
-    Returns:
-        .. files (list): list of file path (abspath) in directory
-    """
-    return [
-        os.path.join(directory, filename)
-        for filename in os.listdir() 
-    ]
-
-
 def search_files_recursively(
     directory,
     by_extensions = None,
@@ -51,18 +37,21 @@ def search_files_recursively(
         patterns = list(map(lambda x: '**/*'+x, by_extensions))
         files = []
         for pattern in patterns:
-            files.extend(Path(video_dir).glob(pattern))
+            files.extend(Path(directory).glob(pattern))
 
     else:
-        files = os.listdir(directory)
+        files = list(Path(directory).glob('**/*.*'))
     
     if abspaths:
-        files = [
-            os.path.join(directory, f)
+        return [
+            os.path.abspath(str(f))
             for f in files
         ]
 
-    return files
+    else:
+        return [
+            str(f) for f in files
+        ]
 
 
 #-----------------------
