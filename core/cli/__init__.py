@@ -13,7 +13,9 @@ from core.cli.dataset_cli import (
 )
 from core.cli.preprocess_cli import (
     # Approx rank pool preprocessing
-    appx_rank_pooling
+    appx_rank_pooling,
+    appx_rank_pooling_cpp,
+    sample_videos
 )
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
@@ -34,4 +36,5 @@ def preprocess_cli():
     echo('Command for preprocessing')
 
 preprocess_cli.add_command(appx_rank_pooling)
-
+preprocess_cli.add_command(appx_rank_pooling_cpp)
+preprocess_cli.add_command(sample_videos)
