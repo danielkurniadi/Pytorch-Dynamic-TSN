@@ -13,7 +13,8 @@ from core.cli.dataset_cli import (
 )
 from core.cli.preprocess_cli import (
     # Approx rank pool preprocessing
-    appx_rank_pooling
+    video_appxRankPooling,
+    imgs_appxRankPooling
 )
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
@@ -33,5 +34,6 @@ dataset_cli.add_command(skf_split_metadataI)
 def preprocess_cli():
     echo('Command for preprocessing')
 
-preprocess_cli.add_command(appx_rank_pooling)
+preprocess_cli.add_command(video_appxRankPooling)
+preprocess_cli.add_command(imgs_appxRankPooling)
 
