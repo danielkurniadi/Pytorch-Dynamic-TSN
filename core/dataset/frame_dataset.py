@@ -56,15 +56,6 @@ class FrameDataset(BaseDataset):
 			transforms.Normalize(self.input_means, self.input_std)
 		])
 
-	@staticmethod
-	def modify_cli_options(parser, is_train):
-		parser.add_argument('--img_name_tmpl', type=str, default='img_{:05d}.png',
-			help='Image name template with (python curly braces format) for each frame in one video folder')
-		parser.add_argument('--random_frame_shift', action='store_true',
-			help='Whether to sample video frames at random shift or at the middle of each segments')
-
-		return parser
-
 	def __len__(self):
 		return len(self.metadata)
 
