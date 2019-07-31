@@ -2,9 +2,18 @@ import os
 import click
 from click import echo
 
+from multiprocessing import current_process
+
 # Computation libs
 import numpy as np
 import cv2
+
+# File utilities
+from core.utils.file_system import (
+    safe_mkdir,
+    search_files_recursively,
+    get_basename,
+)
 
 
 class Buffer():
@@ -85,7 +94,7 @@ def run_video_appx_rank_pooling(
 	cap = cv2.VideoCapture(video_path)
 	buffer = Buffer(buffer_size)
 	success = True
-	
+
 	count = 0
 	while success:
 		success, frame = cap.read()
@@ -103,7 +112,7 @@ def run_video_appx_rank_pooling(
 			arp_outpath = os.path.join(outdir, arp_name)
 			rgb_outpath = os.path.join(outdir, rgb_name)
 
-			print(".. Writing to %s" % outpath)
+			print(".. Writing to %s" % outdir)
 
 			cv2.imwrite(rgb_outpath, rgb_image)
 			cv2.imwrite(arp_outpath, rank_pooled)
