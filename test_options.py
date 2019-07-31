@@ -9,15 +9,11 @@ from core.options.train_options import (
 )
 
 from core import models, dataset
-from core.models import(
-	find_model_using_name,
-	create_model
-)
+from core.models import find_model_using_name
 
 from core.dataset import (
 	find_dataset_using_name,
-	get_option_setter,
-	create_dataset
+	get_option_setter
 )
 
 def print_basic_opts(opts):
@@ -149,7 +145,7 @@ def test_train_options_dataset_specified():
 	print(".. --dataset_mode %s" %opts.dataset_mode)
 	print(".. --img_name_tmpl %s" %opts.img_name_tmpl)
 	
-	print(".. --split_file %s" %opts.split_file)
+	print(".. --split_dir %s" %opts.split_dir)
 
 	print("-----------------------------------------------------\n\n")
 
