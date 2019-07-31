@@ -116,9 +116,9 @@ def run_video_appx_rank_pooling(
 
 			cv2.imwrite(rgb_outpath, rgb_image)
 			cv2.imwrite(arp_outpath, rank_pooled)
+			count += 1
 
 		buffer.enqueue(frame)
-		count += 1
 
 	cap.release()
 
