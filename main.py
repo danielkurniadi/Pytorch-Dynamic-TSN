@@ -34,7 +34,7 @@ lr = opt.lr
 momentum = opt.momentum
 
 input_size = opt.input_size
-input_channel = opt.input_channels
+input_channel = opt.input_nc
 
 # model
 model = create_model(opt)      # create a model given opt.model and other options

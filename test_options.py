@@ -30,8 +30,8 @@ def print_basic_opts(opts):
 	
 	print("------------------- Model Configs -------------------")
 	print(".. --model %s" %opts.model)
-	print(".. --n_classes %s" %opts.n_classes)
-	print(".. --input_channels %s" %opts.input_channels)
+	print(".. --n_classes %s" %opts.output_nc)
+	print(".. --input_channels %s" %opts.input_nc)
 	print(".. --norm %s" %opts.norm)
 	print(".. --init_type %s" %opts.init_type)
 	print(".. --init_gain %s" %opts.init_gain)
@@ -186,7 +186,7 @@ def test_train_options_model_specified():
 	print(".. --input_means %s" %opts.input_means)
 	print(".. --input_size %s" %opts.input_size)
 	print(".. --input_range %s" %opts.input_range)
-	print(".. --input_channels %s" %opts.input_channels)
+	print(".. --input_channels %s" %opts.input_nc)
 	print(".. --input_std %s" %opts.input_std)
 
 	print("-----------------------------------------------------\n\n")

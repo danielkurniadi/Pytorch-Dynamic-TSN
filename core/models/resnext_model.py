@@ -21,7 +21,7 @@ class ResnextModel(BaseModel):
 
     def __init__(self, opts):
         super(ResnextModel, self).__init__(opts)
-        self.n_classes = opts.n_classes
+        self.n_classes = opts.output_nc
         self.opts = opts
         
         self.pretrained = opts.pretrained
@@ -31,7 +31,7 @@ class ResnextModel(BaseModel):
 
         # pretrained input image settings
         self.input_size = opts.input_size
-        self.input_channels = opts.input_channels
+        self.input_channels = opts.input_nc
         self.input_means = opts.input_means
         self.input_std = opts.input_std
         self.input_range = opts.input_range
@@ -80,7 +80,7 @@ class ResnextModel(BaseModel):
         setattr(
             self.model,
             self.model.last_layer_name,
-            torch.nn.Linear(num_feats, self.opts.n_classes)
+            torch.nn.Linear(num_feats, self.n_classes)
         )
 
     @staticmethod

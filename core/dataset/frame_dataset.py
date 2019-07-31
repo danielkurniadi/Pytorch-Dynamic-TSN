@@ -42,7 +42,7 @@ class FrameDataset(BaseDataset):
 		self.img_name_tmpl = 'img_{:05d}_' + self.image_extension
 
 		# configure image property
-		self.input_channels = opts.input_channels
+		self.input_channels = opts.input_nc
 		self.input_size = opts.input_size
 		self.input_means = opts.input_means
 		self.input_std = opts.input_std
