@@ -38,7 +38,7 @@ def abs_listdir(
 
 def search_files_recursively(
     directory,
-    prefix,
+    prefix='',
     by_extensions = [],
     abspaths = True
 ):
