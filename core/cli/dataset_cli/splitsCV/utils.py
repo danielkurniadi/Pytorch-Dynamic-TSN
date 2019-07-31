@@ -3,6 +3,7 @@ import glob
 
 import numpy as np
 from sklearn.model_selection import StratifiedShuffleSplit
+from core.dataset.utils import search_files_recursively
 
 
 #------------------------
@@ -55,6 +56,7 @@ def write_metadata_to_split_file(
     data_paths,
     data_labels,
     split_type = 'II',
+    data_prefix = ''
 ):
     """Write all metadata to a file
     """
@@ -68,7 +70,7 @@ def write_metadata_to_split_file(
         num_frames_list = []
         for data_path in data_paths:
             abs_path = os.path.abspath(data_path)
-            files = os.listdir(abs_path)
+            files = search_files_recursively(abs_path, prefix=data_prefix)
 
             if not files:
                 # TODO: use warn.warnings
@@ -99,8 +101,9 @@ def generate_skf_split_files(
     outdir,
     include_test_split = True,
     split_type = 'file',
-    out_prefix = "",
-    n_splits = 5
+    split_prefix = "",
+    n_splits = 5,
+    data_prefix = ''
 ):
     """
     Generaterate Shuffled-Stratified K Fold split 
@@ -109,7 +112,7 @@ def generate_skf_split_files(
     if include_test_split:
         # if True, split data to train, val, test. 
         # otherwise just train and val split
-        test_splitname = '{}_test_split.txt'.format(out_prefix)
+        test_splitname = '{}_test_split.txt'.format(split_prefix)
         test_splitpath = os.path.join(outdir, test_splitname)
 
         all_train_paths, all_test_paths, all_train_labels, all_test_labels =  train_test_split(
@@ -120,7 +123,8 @@ def generate_skf_split_files(
             test_splitpath,
             all_test_paths,
             all_test_labels,
-            split_type
+            split_type,
+            data_prefix
         )
 
     else:
@@ -139,7 +143,7 @@ def generate_skf_split_files(
         X_train = all_train_paths[train_idx]    # X_train is list of train data path 
         y_train = all_train_labels[train_idx]   # y_train is list of label values
 
-        train_splitname = "{}_train_split_{}.txt".format(out_prefix, i)
+        train_splitname = "{}_train_split_{}.txt".format(split_prefix, i)
         train_splitpath = os.path.join(outdir, train_splitname) 
 
         # writing metadata for training split
@@ -147,14 +151,15 @@ def generate_skf_split_files(
             train_splitpath,
             X_train,
             y_train,
-            split_type
+            split_type,
+            data_prefix
         )
 
         # validation split
         X_val = all_train_paths[val_idx]        # X_val is list of val data path
         y_val = all_train_labels[val_idx]       # y_val is list of val data path
 
-        val_splitname = "{}_val_split_{}.txt".format(out_prefix, i)
+        val_splitname = "{}_val_split_{}.txt".format(split_prefix, i)
         val_splitpath = os.path.join(outdir, val_splitname) 
 
         # writing metadata for validation split
@@ -162,5 +167,6 @@ def generate_skf_split_files(
             val_splitpath,
             X_val,
             y_val,
-            split_type
+            split_type,
+            data_prefix
         )

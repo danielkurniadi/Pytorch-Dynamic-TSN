@@ -64,7 +64,7 @@ Example folder structure:
     type = click.IntRange(3, 10, clamp=True)
 )
 @click.option(
-    '--out_prefix',
+    '--split_prefix',
     default = '',
     type = click.STRING
 )
@@ -72,7 +72,7 @@ def skf_split_metadataI(
     dataset_dir,
     split_dir,
     n_splits,
-    out_prefix,
+    split_prefix,
 ):
     """ Stratified KFold splitting for type I metadata
     """
@@ -85,7 +85,7 @@ def skf_split_metadataI(
         split_dir,
         include_test_split = True,
         split_type = 'I',
-        out_prefix = out_prefix,
+        split_prefix = split_prefix,
         n_splits = n_splits
     )
 
@@ -136,7 +136,12 @@ Example folder structure:
     type = click.IntRange(3, 10, clamp=True)
 )
 @click.option(
-    '--out_prefix',
+    '--data_prefix',
+    default = '',
+    type = click.STRING
+)
+@click.option(
+    '--split_prefix',
     default = '',
     type = click.STRING
 )
@@ -144,7 +149,8 @@ def skf_split_metadataII(
     dataset_dir,
     split_dir,
     n_splits,
-    out_prefix,
+    data_prefix,
+    split_prefix,
 ):
     """Stratified KFold splitting for type II metadata
     """
@@ -157,6 +163,7 @@ def skf_split_metadataII(
         split_dir,
         include_test_split = True,
         split_type = 'II',
-        out_prefix = out_prefix,
-        n_splits = n_splits
+        split_prefix = split_prefix,
+        n_splits = n_splits,
+        data_prefix = data_prefix
     )
