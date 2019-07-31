@@ -133,7 +133,7 @@ def imgs_appxRankPooling(
 ):
     """
     Usage: 
-        > preprocess_cli rgbs-appxrankpooling {YOUR_VIDEO_DIR} \ 
+        > preprocess_cli imgs-appxrankpooling {YOUR_VIDEO_DIR} \ 
             {YOUR_SAVE_FOLDER} [--OPTIONS] 
     """
     print("Executing rgbs-appx-rank-pooling on video...")
