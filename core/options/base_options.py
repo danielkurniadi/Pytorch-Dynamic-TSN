@@ -73,10 +73,10 @@ class BaseOptions(object):
             help='Chooses which model to use. [tsn | resnext101]')
         parser.add_argument('--pretrained', type=str, default='imagenet',
             help='Chooses pretrained weights')
-        parser.add_argument('--n_classes', type=int, default=10,
-            help='# of output target classes')
-        parser.add_argument('--input_channels', type=int, default=3,
+        parser.add_argument('--input_nc', type=int, default=3,
             help='# of input image channels: 3 for RGB and 1 for grayscale')
+        parser.add_argument('--output_nc', type=int, default=10,
+            help='# of output target classes')
         parser.add_argument('--norm', type=str, default='instance',
             help='instance normalization or batch normalization [instance | batch | none]')
         parser.add_argument('--init_type', type=str, default='normal',
