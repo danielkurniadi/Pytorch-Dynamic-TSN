@@ -38,6 +38,9 @@ Video APPROXIMATED RANK POOLING
 
 Apply approximated rank pooling algorithm to convert video
 into rank pooled frames representing the action in video
+
+Assuming source folder structure type I, output to a folder structure
+that suits for metadata type II.
 """
 
 @click.command()
@@ -73,9 +76,6 @@ def video_appxRankPooling(
     Usage: 
         > preprocess_cli video-appxrankpooling {YOUR_VIDEO_DIR} \ 
             {YOUR_SAVE_FOLDER} [--OPTIONS]
-
-    Assuming source folder structure type I, output to a folder structure
-    that suits for metadata type II.
     """
     print(". Executing appx_rank_pool on video...")
     safe_mkdir(dest)
@@ -112,6 +112,9 @@ Images APPROXIMATED RANK POOLING
 
 Apply approximated rank pooling algorithm to convert images/frames
 into rank pooling representation.
+
+Assuming source folder structure type II, output to a folder structure
+that suits for metadata type II.
 """
 
 @click.command()
@@ -147,9 +150,6 @@ def imgs_appxRankPooling(
     Usage: 
         > preprocess_cli imgs-appxrankpooling {YOUR_VIDEO_DIR} \ 
             {YOUR_SAVE_FOLDER} [--OPTIONS]
-    
-    Assuming source folder structure type II, output to a folder structure
-    that suits for metadata type II.
     """
     print("Executing rgbs-appx-rank-pooling on video...")
     safe_mkdir(dest)
@@ -183,6 +183,8 @@ Video DENSE OPTICAL FLOW
 
 Apply dense optical flow algorithm to convert video
 into optical flow frames representing x and y motion flow in the video
+
+Output frames is of .jpg format
 """
 
 @click.command()
@@ -199,7 +201,7 @@ into optical flow frames representing x and y motion flow in the video
 @click.option(
     '-j',
     '--n_jobs',
-    default = 8,
+    default = 40,
     type = int
 )
 def video_denseOpticalFlow(
@@ -209,9 +211,8 @@ def video_denseOpticalFlow(
 ):
     """
     Usage:
-        > preprocess_cli video_denseOpticalFlow {YOUR_VIDEO_DIR} \
+        > preprocess_cli video-denseOpticalFlow {YOUR_VIDEO_DIR} \
             {YOUR_SAVE_FOLDER} [--OPTIONS]
-        Output frames is of .jpg format
     """
     print(". Executing dense_optical_flow on video...")
     safe_mkdir(dest)
@@ -248,4 +249,7 @@ def video_denseOpticalFlow(
         pool.join()
 
         for result in results:
-            print(result.get())
+            out, err = result.get()
+            with open("logs/denseflow.txt", "a+") as f:
+                f.write("out %s, err %s\n" % (out, err))
+
