@@ -83,11 +83,9 @@ def run_video_appx_rank_pooling(
 ):
 	"""Approximated Rank Pooling (ARP) runner for video input
 
-	Outputs Rank pooled frames and RGB frames from a video.
-	Number of rank pooled and RGB frames are kept equal. 
+	Outputs Rank pooled frames from a video.
 	"""
 	arp_name_tmpl = 'arp_{:05d}' + img_ext
-	rgb_name_tmpl = 'img_{:05d}' + img_ext
 	safe_mkdir(outdir)  # create directory for each video data
 
 	current = current_process()
@@ -103,18 +101,13 @@ def run_video_appx_rank_pooling(
 			frames = buffer.get()
 			buffer.dequeue()
 
-			rgb_image = frames[buffer_size//2]  # take the middle frame
 			rank_pooled = cvApproxRankPooling(frames)
 
 			arp_name = arp_name_tmpl.format(count)
-			rgb_name = rgb_name_tmpl.format(count)
-			
 			arp_outpath = os.path.join(outdir, arp_name)
-			rgb_outpath = os.path.join(outdir, rgb_name)
 
 			print(".. Writing to %s" % outdir)
 
-			cv2.imwrite(rgb_outpath, rgb_image)
 			cv2.imwrite(arp_outpath, rank_pooled)
 			count += 1
 
@@ -131,7 +124,6 @@ def run_img_appx_rank_pooling(
 	""" Approximated rank pooling for images input from a folder
 	
 	Outputs Rank pooled image from images input.
-	Number of output is a rank pooled image.
 	"""
 	img_paths = search_files_recursively(
 		directory,
