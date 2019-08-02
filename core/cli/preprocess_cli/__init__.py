@@ -3,7 +3,12 @@ from pathlib import Path
 
 import click
 from click import echo
+
+# Parallel and Subprocess library
+import subprocess
+import multiprocessing
 from multiprocessing import Pool, current_process
+from multiprocessing.pool import ThreadPool
 
 import cv2
 import numpy as np
@@ -21,11 +26,15 @@ from core.cli.preprocess_cli.appx_rank_pooling import (
     run_video_appx_rank_pooling,
     run_img_appx_rank_pooling
 )
+
+# Dense Optical Flow
+from core.cli.preprocess_cli.dense_flow import run_video_dense_flow 
+
 video_extensions = ['.avi', '.mp4', '.webm', '.mov', '.mkv']
 
 
 """
-VIdeo APPROXIMATED RANK POOLING
+Video APPROXIMATED RANK POOLING
 
 Apply approximated rank pooling algorithm to convert video
 into rank pooled frames representing the action in video
@@ -62,10 +71,13 @@ def video_appxRankPooling(
 ):
     """
     Usage: 
-        > preprocess_cli video-appx-rank-pooling {YOUR_VIDEO_DIR} \ 
-            {YOUR_SAVE_FOLDER} [--OPTIONS] 
+        > preprocess_cli video-appxrankpooling {YOUR_VIDEO_DIR} \ 
+            {YOUR_SAVE_FOLDER} [--OPTIONS]
+
+    Assuming source folder structure type I, output to a folder structure
+    that suits for metadata type II.
     """
-    print("Executing appx_rank_pool on video...")
+    print(". Executing appx_rank_pool on video...")
     safe_mkdir(dest)
     
     for class_folder in os.listdir(source):     # run appx rank pool for each video in all class_folder
@@ -79,15 +91,15 @@ def video_appxRankPooling(
 
         # take only the basename of each video url, clean name from dot and whitespace
         # and use this basename for output image name
-        outpaths = [
-            os.path.join(outfolder, clean_filename(get_basename(video)))
-            for video in video_files
+        outdir = [
+            os.path.join(outfolder, clean_filename(get_basename(video_file)))
+            for video_file in video_files
         ]
-        img_exts = [img_ext]* len(outpaths)  # TODO: optimise this extension duplicating given every element is constant
+        img_exts = [img_ext]* len(outdir)  # TODO: optimise this extension duplicating given every element is constant
 
         print(". Current class folder: %s, total:%d" %(class_folder, len(video_files)))
 
-        run_args = list(zip(video_files, outpaths, img_exts))
+        run_args = list(zip(video_files, outdir, img_exts))
         results = Pool(n_jobs).starmap(
             run_video_appx_rank_pooling, run_args
         )
@@ -96,7 +108,7 @@ def video_appxRankPooling(
 
 
 """
-images APPROXIMATED RANK POOLING
+Images APPROXIMATED RANK POOLING
 
 Apply approximated rank pooling algorithm to convert images/frames
 into rank pooling representation.
@@ -134,20 +146,22 @@ def imgs_appxRankPooling(
     """
     Usage: 
         > preprocess_cli imgs-appxrankpooling {YOUR_VIDEO_DIR} \ 
-            {YOUR_SAVE_FOLDER} [--OPTIONS] 
+            {YOUR_SAVE_FOLDER} [--OPTIONS]
+    
+    Assuming source folder structure type II, output to a folder structure
+    that suits for metadata type II.
     """
     print("Executing rgbs-appx-rank-pooling on video...")
     safe_mkdir(dest)
     
-    source = os.path.abspath(source)
     for class_folder in abs_listdir(source):     # run appx rank pool for each video in all class_folder
         subdirs = abs_listdir(class_folder)
-        outdir = os.join.path(dest, get_basename(class_folder))
+        outfolder = os.join.path(dest, get_basename(class_folder))
         
         safe_mkdir(outdir)
 
         outpaths = [
-            os.path.join(outdir, get_basename(subdir))
+            os.path.join(outfolder, get_basename(subdir))
             for subdir in subdirs
         ]
 
@@ -162,3 +176,76 @@ def imgs_appxRankPooling(
         )
 
         print(". Finished %s." % class_folder)
+
+
+"""
+Video DENSE OPTICAL FLOW
+
+Apply dense optical flow algorithm to convert video
+into optical flow frames representing x and y motion flow in the video
+"""
+
+@click.command()
+@click.argument(
+    'source',
+    envvar = 'SRC',
+    type = click.Path(exists=True, dir_okay= True)
+)
+@click.argument(
+    'dest',
+    envvar = 'SAVE_FOLDER',
+    type = click.Path(exists=False, dir_okay=True)
+)
+@click.option(
+    '-j',
+    '--n_jobs',
+    default = 8,
+    type = int
+)
+def video_denseOpticalFlow(
+    source,
+    dest,
+    n_jobs
+):
+    """
+    Usage:
+        > preprocess_cli video_denseOpticalFlow {YOUR_VIDEO_DIR} \
+            {YOUR_SAVE_FOLDER} [--OPTIONS]
+        Output frames is of .jpg format
+    """
+    print(". Executing dense_optical_flow on video...")
+    safe_mkdir(dest)
+
+    for class_folder in abs_listdir(source):
+        video_files = search_files_recursively(
+            class_folder,
+            by_extensions = video_extensions
+        )
+        out_class_folder = os.path.join(dest, get_basename(class_folder))
+        
+        safe_mkdir(out_class_folder)
+
+        # take only the base name of each video url
+        outdir = [
+            os.path.join(out_class_folder, clean_filename(get_basename(video_file)))
+            for video_file in video_files
+        ]
+        
+        print(". Current class folder: %s, total: %d" %(class_folder, len(video_files)))
+        
+        run_args = list(zip(video_files, outdir))
+        pool = ThreadPool(min(n_jobs, multiprocessing.cpu_count()))
+
+        results = []
+        for run_arg in run_args:
+            result = pool.apply_async(
+                run_video_dense_flow, run_arg
+            )
+            results.append(result)
+
+        # Close the pool and wait for each task to complete
+        pool.close()
+        pool.join()
+
+        for result in results:
+            print(result.get())
