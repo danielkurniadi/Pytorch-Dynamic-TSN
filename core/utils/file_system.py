@@ -32,7 +32,7 @@ def abs_listdir(
     """
     return [
         os.path.abspath(os.path.join(directory, f))
-        for f in os.listdir()
+        for f in os.listdir(directory)
     ]
 
 
