@@ -2,9 +2,12 @@ import os
 import shlex
 from subprocess import Popen, PIPE
 
-from core.utils.file_system import safe_mkdir
+from core.utils.file_system import (
+	safe_mkdir,
+	get_basename
+)
 
-dense_flow_exec_file = "build/dense_flow_gpu"
+dense_flow_exec_file = "build/denseFlow_gpu"
 dense_flow_cmd_tmpl = (
 	'{0} --vidFile={1} --xFlowFile={flow_x_prefix} --yFlowFile={flow_y_prefix} --imgFile={img_name_tmpl} '
 	'--bound={bound} --type={flow_type} --device_id={gpu_id} --step={step} -h {height} -w {width}'
@@ -28,10 +31,10 @@ def run_video_dense_flow(
 	"""
 	def call_proc(cmd):
 		""" This runs in separate thread."""
-		# p = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE)
-		# out, err = p.communicate()
+		p = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE)
+		out, err = p.communicate()
 		
-		return shlex.split(cmd)
+		return out, err
 
 	flow_x_prefix = os.path.join(outdir, 'flow_x_')  # prefix of flow x frames
 	flow_y_prefix = os.path.join(outdir, 'flow_y_')  # prefix of flow y frames
@@ -45,6 +48,8 @@ def run_video_dense_flow(
 		flow_type=flow_type, gpu_id=gpu_id, step=step,
 		height=height, width=width
 	)
+
+	print(".. Running %s executable on video %s" % (dense_flow_exec_file, get_basename(video_path)))
 
 	return call_proc(dense_flow_cmd)
 
