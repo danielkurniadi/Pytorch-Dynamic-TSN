@@ -9,7 +9,9 @@ from core.cli.dataset_cli import (
     url_download,
     # Split dataset
     skf_split_metadataI,
-    skf_split_metadataII
+    skf_split_metadataII,
+    # Dataset index formatting
+    format_index_of_filenames
 )
 from core.cli.preprocess_cli import (
     # Approx rank pool preprocessing
@@ -29,6 +31,7 @@ dataset_cli.add_command(api_download)
 dataset_cli.add_command(url_download)
 dataset_cli.add_command(skf_split_metadataII)
 dataset_cli.add_command(skf_split_metadataI)
+dataset_cli.add_command(format_index_of_filenames)
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
