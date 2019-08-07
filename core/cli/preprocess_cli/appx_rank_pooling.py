@@ -79,12 +79,17 @@ def run_video_appx_rank_pooling(
 	video_path,
 	outdir,
 	img_ext='.jpg',
-	buffer_size=10,
+	buffer_size=24,
 ):
 	"""Approximated Rank Pooling (ARP) runner for video input
 
 	Outputs Rank pooled frames from a video.
 	"""
+	def _run_appx_rank_pooling(frames, outpath):
+		rank_pooled = cvApproxRankPooling(frames)
+
+		cv2.imwrite(outpath, rank_pooled)
+
 	arp_name_tmpl = 'arp_{:05d}' + img_ext
 	safe_mkdir(outdir)  # create directory for each video data
 
@@ -93,55 +98,21 @@ def run_video_appx_rank_pooling(
 	buffer = Buffer(buffer_size)
 	success = True
 
-	count = 0
+	count = 1
 	while success:
 		success, frame = cap.read()
 
 		if buffer.isfull():
-			frames = buffer.get()
-			buffer.dequeue()
-
-			rank_pooled = cvApproxRankPooling(frames)
+			frames = buffer.clear()
 
 			arp_name = arp_name_tmpl.format(count)
 			arp_outpath = os.path.join(outdir, arp_name)
 
-			print(".. Writing to %s" % outdir)
-
-			cv2.imwrite(arp_outpath, rank_pooled)
+			_run_appx_rank_pooling(frames, arp_outpath)
 			count += 1
 
 		buffer.enqueue(frame)
 
 	cap.release()
 
-
-def run_img_appx_rank_pooling(
-	directory,
-	outpath,
-	img_ext='.jpg',
-):
-	""" Approximated rank pooling for images input from a folder
-	
-	Outputs Rank pooled image from images input.
-	"""
-	img_paths = search_files_recursively(
-		directory,
-		prefix = 'img_',
-		by_extensions=['.png', '.jpg']
-	)
-	imgs = [
-		cv.imread(img_path)
-		for img_path in img_paths
-	]
-	outpath = os.path.join(
-		dest,
-		get_basename(class_folder),
-		get_basename(subdir),
-		'arp_00000' + img_ext
-	)
-
-	rank_pooled = cvApproxRankPooling(imgs)
-
-	print(".. Writing to %s" % outpath)
-	cv2.imwrite(rank_pooled, outpath)
+	print(".. Finished running appx rankpool to %s" % outdir)
