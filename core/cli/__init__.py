@@ -16,7 +16,6 @@ from core.cli.dataset_cli import (
 from core.cli.preprocess_cli import (
     # Approx rank pool preprocessing
     video_appxRankPooling,
-    imgs_appxRankPooling,
     video_denseOpticalFlow
 )
 
@@ -39,6 +38,5 @@ def preprocess_cli():
     echo('Command for preprocessing')
 
 preprocess_cli.add_command(video_appxRankPooling)
-preprocess_cli.add_command(imgs_appxRankPooling)
 preprocess_cli.add_command(video_denseOpticalFlow)
 

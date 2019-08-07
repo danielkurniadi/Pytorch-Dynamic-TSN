@@ -23,8 +23,7 @@ from core.utils.file_system import (
 )
 # Approximated Rank Pooling
 from core.cli.preprocess_cli.appx_rank_pooling import (
-    run_video_appx_rank_pooling,
-    run_img_appx_rank_pooling
+    run_video_appx_rank_pooling
 )
 
 # Dense Optical Flow
@@ -108,77 +107,6 @@ def video_appxRankPooling(
 
 
 """
-Images APPROXIMATED RANK POOLING
-
-Apply approximated rank pooling algorithm to convert images/frames
-into rank pooling representation.
-
-Assuming source folder structure type II, output to a folder structure
-that suits for metadata type II.
-"""
-
-@click.command()
-@click.argument(
-    'source',
-    envvar = 'SRC',
-    type = click.Path(exists=True, dir_okay=True)
-)
-@click.argument(
-    'dest',
-    envvar = 'SAVE_FOLDER',
-    type = click.Path(exists=False, dir_okay=True)
-)
-@click.option(
-    '-j',
-    '--n_jobs',
-    default = 8,
-    type = int
-)
-@click.option(
-    '-x',
-    '--img_ext',
-    default = '.jpg',
-    type = str
-)
-def imgs_appxRankPooling(
-    source,
-    dest,
-    n_jobs,
-    img_ext
-):
-    """
-    Usage: 
-        > preprocess_cli imgs-appxrankpooling {YOUR_VIDEO_DIR} \ 
-            {YOUR_SAVE_FOLDER} [--OPTIONS]
-    """
-    print("Executing rgbs-appx-rank-pooling on video...")
-    safe_mkdir(dest)
-    
-    for class_folder in abs_listdir(source):     # run appx rank pool for each video in all class_folder
-        subdirs = abs_listdir(class_folder)
-        outfolder = os.join.path(dest, get_basename(class_folder))
-        
-        safe_mkdir(outdir)
-
-        outpaths = [
-            os.path.join(outfolder, get_basename(subdir))
-            for subdir in subdirs
-        ]
-
-        for outpath in outpaths:
-            safe_mkdir(outpath)
-
-        print(". Current class folder: %s, total:%d" %(class_folder, len(video_files)))
-
-        run_args = list(zip(subdir, outpaths, img_exts))
-        results = Pool(n_jobs).starmap(
-            run_img_appx_rank_pooling, run_args
-        )
-
-        print(". Finished %s." % class_folder)
-
-
-"""
 Video DENSE OPTICAL FLOW
 
 Apply dense optical flow algorithm to convert video
@@ -250,6 +178,7 @@ def video_denseOpticalFlow(
 
         for result in results:
             out, err = result.get()
+            
             with open("logs/denseflow.txt", "a+") as f:
                 f.write("out %s, err %s\n" % (out, err))
 
