@@ -30,7 +30,7 @@ def get_path_label_list(
         all_paths.extend(data_paths)        # add those subfolders to list
         all_labels.extend(data_labels)      # add labels to list
 
-    return all_paths, all_labels
+    return sorted(all_paths), sorted(all_labels)
 
 
 def train_test_split(
@@ -42,7 +42,7 @@ def train_test_split(
     all_paths = np.array(all_paths)     # convert to numpy to ease multi-indexing
     all_labels = np.array(all_labels)   # convert to numpy to ease multi-indexing
 
-    sss = StratifiedShuffleSplit(n_splits=1, test_size=test_size)
+    sss = StratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
     train_idx, test_idx = next(iter(sss.split(all_paths, all_labels)))
 
     return (
@@ -103,7 +103,8 @@ def generate_skf_split_files(
     split_type = 'file',
     split_prefix = "",
     n_splits = 5,
-    data_prefix = ''
+    data_prefix = '',
+    random_seed = 42
 ):
     """
     Generaterate Shuffled-Stratified K Fold split 
@@ -116,7 +117,7 @@ def generate_skf_split_files(
         test_splitpath = os.path.join(outdir, test_splitname)
 
         all_train_paths, all_test_paths, all_train_labels, all_test_labels =  train_test_split(
-            all_paths, all_labels, test_size = 0.1, random_state = 42
+            all_paths, all_labels, test_size = 0.1, random_state = random_seed
         )
         # writing metadata for test split
         write_metadata_to_split_file(
@@ -135,7 +136,8 @@ def generate_skf_split_files(
     # stratify dataset on train and validation
     skf = StratifiedShuffleSplit(
         n_splits = n_splits,
-        test_size=0.2
+        test_size = 0.2,
+        random_state = random_seed
     )
 
     for i, (train_idx, val_idx) in enumerate(skf.split(all_train_paths, all_train_labels)):

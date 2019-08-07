@@ -31,7 +31,7 @@ is represented by a file. Each file is seperated to class folder inside dataset 
 Perfect use of this splitting is for image dataset in image classification. where each image file (.png, .jpg, etc) represent one
 datapoint.
 
-Example folder structure:
+Example folder structure of type I:
     |- dataset_dir/
         |- class_A
             |- img0001.png
@@ -101,7 +101,7 @@ video dataset. Inside the folder, are images/frames that has been preprocessed.
 
 It's a common practice to use img frames rather than video input to feed to neural net.
 
-Example folder structure:
+Example folder structure of type II:
     |- dataset_dir/
         |- class_folder_A
             |- folder_of_video0001
@@ -145,12 +145,18 @@ Example folder structure:
     default = '',
     type = click.STRING
 )
+@click.option(
+    '--random_seed',
+    default = 42,
+    type = click.INT
+)
 def skf_split_metadataII(
     dataset_dir,
     split_dir,
     n_splits,
     data_prefix,
     split_prefix,
+    random_seed
 ):
     """Stratified KFold splitting for type II metadata
     """
@@ -165,5 +171,6 @@ def skf_split_metadataII(
         split_type = 'II',
         split_prefix = split_prefix,
         n_splits = n_splits,
-        data_prefix = data_prefix
+        data_prefix = data_prefix,
+        random_seed = random_seed
     )
