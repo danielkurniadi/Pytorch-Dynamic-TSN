@@ -1,4 +1,4 @@
-"""This module implements common functions for reading, loading, indicing image/frame dataset 
+"""This module implements common functions for reading, loading, indicing image/frame dataset
 """
 import os
 import random
@@ -43,8 +43,8 @@ def expand_split_folders_to_filepaths(
 	"""
 	filepaths, newlabels = [], []
 	for metadata in split_list:
-		folder_path = metadata[0]	# by convention, any path to dataset is put in first column
-		label = int(metadata[label_idx])
+		folder_path = metadata[0]			# by convention, any path to dataset is put in first column
+		label = int(metadata[label_idx])	# by convention, any label of dataset is put in last column
 
 		files = search_files_recursively(folder_path)
 		labels = [label] * len(files)
@@ -65,9 +65,10 @@ def generate_sample_seg_indices(n_segments, n_frames, new_length):
 	average_duration = (n_frames - new_length + 1) // n_segments
 	if average_duration > 0:
 		offsets = np.arange(n_segments) * average_duration + \
-			np.random.randint(average_duration, size=n_segments)
+			np.random.randint(average_duration, size=n_segments).astype(int)
 	elif n_frames > n_segments:
-		offsets = np.sort(np.random.randint(n_frames - new_length + 1, size=(n_segments)))
+		offsets = np.sort(np.random.randint(
+			n_frames - new_length + 1, size=(n_segments))).astype(int)
 	else:
 		offsets = np.zeros((n_segments,)).astype(int)
 	return offsets + 1
@@ -81,7 +82,7 @@ def generate_median_seg_indices(n_segments, n_frames, new_length):
 		offsets = np.arange(n_segments) * (average_duration) + average_duration / 2.0
 		offsets = offsets.astype(int)
 	else:
-		offsets = np.zeros((n_segments, ))
+		offsets = np.zeros((n_segments,)).astype(int)
 	return offsets + 1
 
 

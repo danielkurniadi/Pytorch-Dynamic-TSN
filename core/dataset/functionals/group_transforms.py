@@ -6,7 +6,7 @@ import torch
 import torchvision
 from torchvision.transforms import functional as F
 
-from core.dataset.utils.single_transforms import (
+from core.dataset.functionals.single_transforms import (
     __crop,
     __flip,
     __scale
