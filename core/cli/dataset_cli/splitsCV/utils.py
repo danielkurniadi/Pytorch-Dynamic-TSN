@@ -54,37 +54,13 @@ def train_test_split(
 def write_metadata_to_split_file(
     outfile,
     data_paths,
-    data_labels,
-    split_type = 'II',
-    data_prefix = ''
+    data_labels
 ):
     """Write all metadata to a file
     """
-    if split_type in ['I', 'i', 1]:
-        # data is represented by a file
-        to_tmpl = "{} {}\n"
-        to_writes = zip(data_paths, data_labels)
+    to_tmpl = "{} {}\n"
+    to_writes = zip(data_paths, data_labels)
 
-    elif split_type in ['II', 'ii', 2]:
-        # data is represented by a (sub)folder
-        num_frames_list = []
-        for data_path in data_paths:
-            abs_path = os.path.abspath(data_path)
-            files = search_files_recursively(abs_path, prefix=data_prefix)
-
-            if not files:
-                # TODO: use warn.warnings
-                print(
-                    ".. Folder split has num frames == zero for %s; " 
-                    "Skipping..." % abs_path
-                )
-                continue
-            num_frames = len(files)
-            num_frames_list.append(num_frames)
-
-        to_tmpl = "{} {} {}\n"
-        to_writes = zip(data_paths, num_frames_list, data_labels)
-    
     with open(outfile, 'w+') as fp:
         # write or create mode
         for to_write in to_writes:
@@ -100,10 +76,8 @@ def generate_skf_split_files(
     all_labels,
     outdir,
     include_test_split = True,
-    split_type = 'file',
     split_prefix = "",
     n_splits = 5,
-    data_prefix = '',
     random_seed = 42
 ):
     """
@@ -124,8 +98,6 @@ def generate_skf_split_files(
             test_splitpath,
             all_test_paths,
             all_test_labels,
-            split_type,
-            data_prefix
         )
 
     else:
@@ -153,8 +125,6 @@ def generate_skf_split_files(
             train_splitpath,
             X_train,
             y_train,
-            split_type,
-            data_prefix
         )
 
         # validation split
@@ -169,6 +139,4 @@ def generate_skf_split_files(
             val_splitpath,
             X_val,
             y_val,
-            split_type,
-            data_prefix
         )
