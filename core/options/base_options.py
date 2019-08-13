@@ -60,7 +60,9 @@ class BaseOptions(object):
             --split_idx: Index of split files. Assuming split filename is indexed at suffix, e.g. mysplit_train_1.txt
 
         Input Configs
-            .. Arguments for input config. Most are defaulted to a value or determined by model choice.
+            .. Arguments for input config. Most will be defaulted to a value or determined by model choice.
+            .. Rarely one will configure input config by themselves, since every pretrained model has specific input config
+            .. However, leave it here to be attribute of opts that can be passed around
 
         Runtime Configs
             .. Arguments for devices and GPUs, options for logging and checkpoint directories, etc
