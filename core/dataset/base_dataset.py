@@ -98,4 +98,4 @@ class BaseDataset(data.Dataset, ABC):
 		Returns:
 			a dictionary of data with their names. It ususally contains the data itself and its metadata information.
 		"""
-		pass
+		raise NotImplementedError

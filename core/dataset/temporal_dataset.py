@@ -18,6 +18,7 @@ from core.dataset.functionals import (
 	check_filepath,
 	read_strip_split_lines
 )
+from core.dataset.functionals.transforms import get_transform
 
 
 class TemporalDataset(BaseDataset):
@@ -47,14 +48,7 @@ class TemporalDataset(BaseDataset):
 		self.setup_metadata(opts)
 
 		# configure image property
-
-		# configure transforms; TODO: seperate transforms config logic
-		self.transforms = transforms.Compose([
-			transforms.Resize(224),
-			transforms.CenterCrop(224),
-			transforms.ToTensor(),
-			transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-		])
+		self.group_transforms = get_transform(opts)
 
 	def configure_dataset_settings(self, opts):
 		# Configs for input video
@@ -114,7 +108,8 @@ class TemporalDataset(BaseDataset):
 			load_video_frames(frame_indices, directory,
 				self.img_name_tmpl, self.modality)
 		)
-		imgs = [self.transforms(img) for img in imgs]
+		print(len(imgs), n_frames)
+		imgs = self.group_transforms(imgs)
 
 		return imgs, label
 
