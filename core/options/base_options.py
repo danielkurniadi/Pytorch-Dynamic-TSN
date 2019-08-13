@@ -54,7 +54,25 @@ class BaseOptions(object):
     #-----------------------
 
     def initialize(self, parser):
-        """ Define all options by adding arguments to argparser
+        """ Define all options by adding arguments to argparser.
+        Look for required arguments as follows:
+            --split_dir: Directory to split directory. Inside this folder are split files
+            --split_idx: Index of split files. Assuming split filename is indexed at suffix, e.g. mysplit_train_1.txt
+
+        Input Configs
+            .. Arguments for input config. Most are defaulted to a value or determined by model choice.
+
+        Runtime Configs
+            .. Arguments for devices and GPUs, options for logging and checkpoint directories, etc
+        
+        Model Configs
+            .. Argument for specifying model configurations, such as pretraining
+            .. Input and Output channels argument can be overriden by modality and datasetmode opts from Dataset opt
+        
+        Dataset Configs
+            .. Arguments for specifying where to load dataset, which splitting for dataset, transforms,
+                and dataset modalitites
+            .. 
         """
         # ========================= Runtime Configs ==========================
         parser.add_argument('--name', type=str, default='', 
@@ -67,6 +85,26 @@ class BaseOptions(object):
             help='# Threads for loading data')
         parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints',
             help='Models are saved here')
+
+        # ========================= Input Configs ==========================
+        parser.add_argument('-b', '--batch_size', type=int, default=32,
+            help='Input batch size')
+        parser.add_argument('--max_dataset_size', type=int, default=float("inf"),
+            help='Maximum number of samples allowed per dataset. If the dataset directory contains more than max_dataset_size, only a subset is loaded.')
+        parser.add_argument('--input_size', type=int, default=286,
+            help='Scale images to this size')
+        parser.add_argument('--input_means', action='append', nargs='+', type=float, default=[0.5, 0.5, 0.5],
+            help='Input images means')
+        parser.add_argument('--input_range', action='append', nargs='+', type=float, default=[0, 1.0],
+            help='Input images range')
+        parser.add_argument('--input_std', action='append', nargs='+', type=float, default=[0.25, 0.25, 0.25],
+            help='Input images standard deviation')
+        parser.add_argument('--preprocess', type=str, default='resize_and_crop',
+            help='Scaling and cropping of images at load time [resize_and_crop | crop | scale_width | scale_width_and_crop | none]')
+        parser.add_argument('--crop_size', type=int, default=256,
+            help='Then crop to this size')
+        parser.add_argument('--no_flip', action='store_true',
+            help='If specified, do not flip the images for data augmentation')
 
         # ========================= Model Configs ==========================
         parser.add_argument('--model', type=str, default='tsn',
@@ -89,33 +127,11 @@ class BaseOptions(object):
             help='Path to split directory where split files are')
         parser.add_argument('--split_idx', type=int, required=True,
             help='Split index, also known as "k" in KFold technique')
-        parser.add_argument('--metadata_type', type=str, default='II',
-            help='Type of metadata.')
-        parser.add_argument('--dataset_mode', type=str, default='Frame',
-            help='Chooses how datasets are loaded. [Frame | Temporal]')
+        parser.add_argument('--dataset_mode', type=str, default='Temporal',
+            help='Chooses how datasets are loaded. [Spatial | Temporal]')
         parser.add_argument('--img_ext', type=str, default='.png',
             help='File extension of images. [.png | .jpeg | .jpg]')
 
-        # ========================= Input Configs ==========================
-        parser.add_argument('-b', '--batch_size', type=int, default=32,
-            help='Input batch size')
-        parser.add_argument('--max_dataset_size', type=int, default=float("inf"),
-            help='Maximum number of samples allowed per dataset. If the dataset directory contains more than max_dataset_size, only a subset is loaded.')
-        parser.add_argument('--input_size', type=int, default=286,
-            help='Scale images to this size')
-        parser.add_argument('--input_means', action='append', nargs='+', type=float, default=[0.5, 0.5, 0.5],
-            help='Input images means')
-        parser.add_argument('--input_range', action='append', nargs='+', type=float, default=[0, 1.0],
-            help='Input images range')
-        parser.add_argument('--input_std', action='append', nargs='+', type=float, default=[0.25, 0.25, 0.25],
-            help='Input images standard deviation')
-        parser.add_argument('--preprocess', type=str, default='resize_and_crop',
-            help='Scaling and cropping of images at load time [resize_and_crop | crop | scale_width | scale_width_and_crop | none]')
-        parser.add_argument('--crop_size', type=int, default=256,
-            help='Then crop to this size')
-        parser.add_argument('--no_flip', action='store_true',
-            help='If specified, do not flip the images for data augmentation')
-        
         # additional parameters
         parser.add_argument('--load_epoch', type=int, default='0',
             help='which epochs to load? if load_iter > 0, the code will load models by epoch_[load_epoch];')

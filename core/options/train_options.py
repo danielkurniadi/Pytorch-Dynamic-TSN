@@ -14,7 +14,7 @@ class TrainOptions(BaseOptions):
             help='Frequency of saving checkpoints at the end of epochs')
         parser.add_argument('--continue_last', action='store_true',
             help='Continue training: load the latest model')
-        
+
         # ========================= Learning Configs ==========================
         parser.add_argument('--epochs', type=int, default=15,
             help='# of epochs in one training session')
@@ -28,7 +28,7 @@ class TrainOptions(BaseOptions):
             help='Learning rate decay gamma/const')
         parser.add_argument('--lr_decay_iters', type=int, default=150,
             help='Multiply by a lr_decay_rate every <lr_decay_iters> iterations')
-        
+
         # ========================= Monitor Configs ==========================
         parser.add_argument('--eval_freq_epoch', type=int, default=1,
             help='Frequency of eval validation in epoch')
