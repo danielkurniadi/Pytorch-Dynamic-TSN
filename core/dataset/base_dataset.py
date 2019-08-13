@@ -11,8 +11,8 @@ from PIL import Image
 import torchvision.transforms as transforms
 
 # Dataset Utility
-from core.dataset.utils.videoframe import VideoFrameGenerator
-from core.dataset.utils import (
+from core.dataset.functionals.frame_loaders import VideoMetadata
+from core.dataset.functionals import (
 	check_filepath,
 	read_strip_split_lines
 )
@@ -37,21 +37,6 @@ class BaseDataset(data.Dataset, ABC):
 		"""
 		self.opts = opts
 
-		# Warning! : Use your (previous) [--out_prefix] options in <split_cli>
-		# to specify [--name] options when training
-		self.split_idx = opts.split_idx
-		if phase in ['train', 'val']:
-			split_filename = "{}_{}_split_{}.txt".format(
-				opts.name, phase, self.split_idx)
-		else:
-			split_filename = "{}_{}_split.txt"
-
-		self.split_file = os.path.join(
-			opts.split_dir, split_filename)
-
-		# obtain metadata from split file
-		self.metadata = read_strip_split_lines(self.split_file)
-
 	@staticmethod
 	def modify_cli_options(parser, is_train):
 		"""Add new dataset-specific options, and rewrite default values for existing options.
@@ -65,9 +50,44 @@ class BaseDataset(data.Dataset, ABC):
 		"""
 		return parser
 
+	def configure_dataset_settings(self, opts):
+		""" Configure settings of dataset instances """
+		pass
+		
+	def setup_metadata(self, opts):
+		""" Setup and prepare metadata before data loading
+		
+		Returns:
+			metadata_list (list): the metadata list containing metadata stored in object/array-like
+		"""
+		# Warning! : Use your (previous) [--out_prefix] options in <split_cli>
+		# to specify [--name] options when training
+		self.split_idx = opts.split_idx
+		if self.phase in ['train', 'val']:
+			split_filename = "{}_{}_split_{}.txt".format(
+				opts.name, self.phase, self.split_idx)
+		else:
+			split_filename = "{}_{}_split.txt"
+
+		self.split_file = os.path.join(
+			opts.split_dir, split_filename)
+		# obtain metadata from split file
+		self.metadata_list = read_strip_split_lines(self.split_file)
+
+		# Guards for edge cases
+		if not self.metadata_list:
+			# Case 1: Metadata read return no value
+			raise ValueError("Failed to read metadata from %s split file" % self.split_file)
+		if len(self.metadata_list[0]) != 2:
+			# Case 2: Metadata must have 2 values; datasetpath and label
+			raise ValueError("Metadata rows should only contains 2 values: datasetpath and label.")
+		
+		return self.metadata_list
+
+
 	def __len__(self):
 		"""Return the total number of images in the dataset."""
-		return len(self.metadata)
+		return len(self.metadata_list)
 
 	def __getitem__(self, index):
 		"""Return a data point and its metadata information.
