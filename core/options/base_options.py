@@ -55,9 +55,6 @@ class BaseOptions(object):
 
     def initialize(self, parser):
         """ Define all options by adding arguments to argparser.
-        Look for required arguments as follows:
-            --split_dir: Directory to split directory. Inside this folder are split files
-            --split_idx: Index of split files. Assuming split filename is indexed at suffix, e.g. mysplit_train_1.txt
 
         Input Configs
             .. Arguments for input config. Most will be defaulted to a value or determined by model choice.
@@ -109,8 +106,12 @@ class BaseOptions(object):
             help='If specified, do not flip the images for data augmentation')
 
         # ========================= Model Configs ==========================
-        parser.add_argument('--model', type=str, default='tsn',
-            help='Chooses which model to use. [tsn | resnext101]')
+        parser.add_argument('--arch', type=str, default='BNInception',
+            choices=['BNInception', 'Resnext101_32x4d', 'Resnext101_64x4d', 'Resnet101', 'InceptionV3', 'InceptionV4'],
+            help='Network architechture to use from pretrainedmodels')
+        parser.add_argument('--model', type=str, default='TSN',
+            choices=['TSN'],
+            help='Network architechture to use from pretrainedmodels')
         parser.add_argument('--pretrained', type=str, default='imagenet',
             help='Chooses pretrained weights')
         parser.add_argument('--input_nc', type=int, default=3,
@@ -125,10 +126,6 @@ class BaseOptions(object):
             help='Scaling factor for normal, xavier and orthogonal.')
 
         # ========================= Data Configs ==========================
-        parser.add_argument('--split_dir', type=str, required=True,
-            help='Path to split directory where split files are')
-        parser.add_argument('--split_idx', type=int, required=True,
-            help='Split index, also known as "k" in KFold technique')
         parser.add_argument('--dataset_mode', type=str, default='Temporal',
             help='Chooses how datasets are loaded. [Spatial | Temporal]')
         parser.add_argument('--img_ext', type=str, default='.png',
