@@ -3,7 +3,7 @@ import glob
 
 import numpy as np
 from sklearn.model_selection import StratifiedShuffleSplit
-from core.dataset.utils import search_files_recursively
+from core.utils.file_system import search_files_recursively
 
 
 #------------------------
