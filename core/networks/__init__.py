@@ -170,15 +170,15 @@ def reshape_input_nc(net, input_nc, use_mean=True):
     kernel_size = first_conv2d_layer.kernel_size
     stride = first_conv2d_layer.stride
     padding = first_conv2d_layer.padding
-    output_nc = first_conv2d_layer.output_channels
+    output_nc = first_conv2d_layer.out_channels
     
     reshaped_conv2d = nn.Conv2d(input_nc, output_nc, kernel_size,
                                 stride=stride, padding=padding)
-    if keep_data:
+    if use_mean:
         weight, bias = first_conv2d_layer.parameters()
         weight, bias = weight.copy(), bias.copy()
         
-        new_weight_data = weight.data.mean(dim=1).unsqueeze(dim=1) # mean over IN_C dimension, but keep the IN_C dim
+        new_weight_data = weight.data.mean(dim=1).unsqueeze(dim=1) # mean over IN_C dimension, but keep the IN_C dim by unsqueezing
         new_weight_data = new_weight_data.expand(-1, input_nc, -1, -1) # expand over IN_C dimension -> weight (OUT_C, IN_C, size, size)
 
         reshaped_conv2d.weight.data = new_weight_data
