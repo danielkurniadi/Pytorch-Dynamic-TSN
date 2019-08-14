@@ -67,7 +67,7 @@ class BaseDataset(data.Dataset, ABC):
 			split_filename = "{}_{}_split_{}.txt".format(
 				opts.name, self.phase, self.split_idx)
 		else:
-			split_filename = "{}_{}_split.txt"
+			split_filename = "{}_test_split.txt".format(opts.name)
 
 		self.split_file = os.path.join(
 			opts.split_dir, split_filename)
