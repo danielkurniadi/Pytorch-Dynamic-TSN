@@ -9,15 +9,11 @@ from core.options.train_options import (
 )
 
 from core import models, dataset
-from core.models import(
-	find_model_using_name,
-	create_model
-)
+from core.models import find_model_using_name
 
 from core.dataset import (
 	find_dataset_using_name,
-	get_option_setter,
-	create_dataset
+	get_option_setter
 )
 
 def print_basic_opts(opts):
@@ -30,8 +26,8 @@ def print_basic_opts(opts):
 	
 	print("------------------- Model Configs -------------------")
 	print(".. --model %s" %opts.model)
-	print(".. --n_classes %s" %opts.n_classes)
-	print(".. --input_channels %s" %opts.input_channels)
+	print(".. --n_classes %s" %opts.output_nc)
+	print(".. --input_channels %s" %opts.input_nc)
 	print(".. --norm %s" %opts.norm)
 	print(".. --init_type %s" %opts.init_type)
 	print(".. --init_gain %s" %opts.init_gain)
@@ -149,7 +145,7 @@ def test_train_options_dataset_specified():
 	print(".. --dataset_mode %s" %opts.dataset_mode)
 	print(".. --img_name_tmpl %s" %opts.img_name_tmpl)
 	
-	print(".. --split_file %s" %opts.split_file)
+	print(".. --split_dir %s" %opts.split_dir)
 
 	print("-----------------------------------------------------\n\n")
 
@@ -186,7 +182,7 @@ def test_train_options_model_specified():
 	print(".. --input_means %s" %opts.input_means)
 	print(".. --input_size %s" %opts.input_size)
 	print(".. --input_range %s" %opts.input_range)
-	print(".. --input_channels %s" %opts.input_channels)
+	print(".. --input_channels %s" %opts.input_nc)
 	print(".. --input_std %s" %opts.input_std)
 
 	print("-----------------------------------------------------\n\n")

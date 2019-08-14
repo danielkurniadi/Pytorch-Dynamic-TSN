@@ -10,19 +10,36 @@
 debug*
 
 ### Project ###
+
 # downloaded and processed data
 data/raw/*
 data/preprocessed/*
 data/splits/*
+data/test/*
 !data/*/.keep
+
 # checkpoint files
 checkpoints/*
 !checkpoints/.keep
+
 # build folder
 build/*
 !build/.keep
+
+# logging
+logs/*
+
 # distribution folder
 dist/*
+
+# scores
+scores/*
+!scores/.keep
+
+# notebooks
+notebooks/*
+!notebooks/.keep
+
 # pytorch
 torch.egg-info/
 */**/__pycache__

@@ -9,118 +9,107 @@ from PIL import Image
 import torchvision.transforms as transforms
 
 from core.dataset.base_dataset import BaseDataset
-from core.dataset.utils.videoframe import VideoFrameGenerator
-from core.dataset.utils import (
+from core.dataset.functionals.frame_loaders import (
+	VideoMetadata,
+	generate_video_indices,
+	load_video_frames
+)
+from core.dataset.functionals import (
 	check_filepath,
 	read_strip_split_lines
 )
+from core.dataset.functionals.transforms import get_transform
 
 
 class TemporalDataset(BaseDataset):
 	"""Temporal (action) dataset
 
-    Temporal dataset from video frames which support loading data from pre-processed video frames.
-    Temporal dataset has new channel length that comes from stacking images ordered chronogically.
-    The channel axis represent time series.
+	Temporal dataset from video frames which support loading data from pre-processed video frames.
+	Temporal dataset has new channel length that comes from stacking images ordered chronogically.
+	The channel axis represent time series.
 
 	Temporal action frames initially take image of extension .jpg, .png, .jpeg, etc. 
 	They represent frames taken from video.
 	
 	The metadata for this dataset, also called split file, contains three columns:
-        ... folder path, num_frames, and labels
+		... folder path, num_frames, and labels
 	"""
 
 	def __init__(self, opts, phase='train'):
-		super(BaseDataset, self).__init__(opts, phase)
-		self.opts = opts
+		"""Initialize the class; save the options in the class
 
-		# configure image file naming
-		self.modality = opts.dataset_mode
+		Parameters:
+			opts (Option class)-- stores all the experiment flags; needs to be a subclass of BaseOptions
+			phase (str)-- specify if this dataset loader is used for [train | val | test]
+		"""
+		self.opts = opts
+		self.phase = phase
+		self.configure_dataset_settings(opts)
+		self.setup_metadata(opts)
+
+		# configure image property
+		self.group_transforms = get_transform(opts)
+
+	def configure_dataset_settings(self, opts):
+		# Configs for input video
+		self.modality = opts.modality
+		self.n_segments = opts.n_segments			# segment video to n_segment
+		self.sample_length = opts.sample_length		# sample length per segment
+		self.random_shift = opts.random_shift
+
+		# Configs for image file naming
 		self.image_extension = opts.img_ext
 
-        # configure input modality
 		if self.modality in ['RGB', 'RGBDiff', 'ARP']:
-			self.img_name_tmpl = self.modality + '_{:05d}_' + self.image_extension
-			self.img_name_tmpl = self.img_name_tmpl.lower()
-
+			self.img_name_tmpl = self.modality.lower() + '_{:05d}' + self.image_extension
 		elif self.modality == 'Flow':
-			self.img_name_tmpl = self.modality + '_{}_' + '_{:05d}_' + self.image_extension
-
+			self.img_name_tmpl = self.modality.lower() + '_{}_' + '_{:05d}' + self.image_extension
 		else:
 			raise NotImplementedError(
-				'Unsupported Modality for Action Dataset. '
+				'Unsupported Modality for Temporal Dataset. '
 				'Please implement for specified modality: %s' % self.modality
 			)
 
-		# configure image property
-		self.input_channels = opts.input_channels
-		self.input_size = opts.input_size
-		self.input_means = opts.input_means
-		self.input_std = opts.input_std
+	def setup_metadata(self, opts):
+		super(TemporalDataset, self).setup_metadata(opts)
 
-		# configure transforms
-		self.crop_size = opts.crop_size
-		self.transforms = transforms.Compose([
-			transforms.Resize(self.input_size),
-			transforms.CenterCrop(self.crop_size),
-			transforms.ToTensor(),
-			transforms.Normalize(self.input_means, self.input_std)
-		])
-
-		# configure sampling
-		self.random_frame_shift = self.opts.random_frame_shift
-		
-		# video generators
-		self.frame_generators = self.create_frame_generators()
+		# Parse and map metadata to VideoMetadata (named_tuple)
+		self.video_metadata_list = [
+			VideoMetadata(directory, label, self.modality)
+			for directory, label in self.metadata_list
+		]
+		return self.video_metadata_list
 
 	@staticmethod
 	def modify_cli_options(parser, is_train):
-        parser.add_argument('--modality', type=str, default='RGB',
-            help='Chooses modality for intended dataset. [RGB | RGBDiff | Flow | ARP]')
-		parser.add_argument('--random_frame_shift', action='store_true',
+		parser.add_argument('--modality', type=str, default='RGB',
+			help='Chooses modality for intended dataset. [RGB | RGBDiff | Flow | ARP]')
+		parser.add_argument('--n_segments', type=int, default=3,
+			help='Number of video segments.')
+		parser.add_argument('--sample_length', type=int, default=5,
+			help='Number of frames to be sampled in each segment')
+		parser.add_argument('--random_shift', action='store_true',
 			help='Whether to sample video frames at random shift or at the middle of each segments')
 
 		return parser
 
-	def __len__(self):
-		return len(self.frame_generators)
-
 	def __getitem__(self, index):
-		frame_generator = self.frame_generators[index]
-		imgs, label = list(frame_generator)		# iterate frame_generator to get frames and respective label
+		metadata = self.video_metadata_list[index]
+		directory = metadata.directory		# directory of video frames (single dataset)
+		n_frames = metadata.n_frames		# number of frames in directory having same modality
+		label = metadata.label				# class label
 
-        # TODO: transforms
+		frame_indices = generate_video_indices(
+			self.n_segments, n_frames,
+			self.sample_length, self.random_shift)
+
+		# iterate frame_generator to get frames and respective label
+		imgs = list(
+			load_video_frames(frame_indices, directory,
+				self.img_name_tmpl, self.modality)
+		)
+		print(len(imgs), n_frames)
+		imgs = self.group_transforms(imgs)
+
 		return imgs, label
 
-	#-----------------------
-	# Frames loader
-	#-----------------------
-
-	def create_frame_generators(self):
-		""" Create video frame generators to load frames for each video.
-
-		Returns:
-			.. vid generators (list): list of generators, each handle frame iteration 
-				of one video.
-		"""
-		frame_generators = []
-
-		for line in self.metadata:
-			# parse metadata line by line
-			directory, n_frames, label = line
-			n_frames = int(n_frames)	# convert to int
-			label = int(n_frames)		# convert to int
-
-			# using information in metadata to
-			# create frames generator for each video
-			frame_generator = VideoFrameGenerator(
-				directory,
-				n_frames,
-				label,
-				self.img_name_tmpl,
-				self.random_shift
-			)
-
-			frame_generators.append(frame_generator)
-
-		return frame_generators

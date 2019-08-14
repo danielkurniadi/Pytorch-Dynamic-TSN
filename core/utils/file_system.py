@@ -20,38 +20,55 @@ def safe_mkdir(directory):
 # Search
 #-----------------------
 
+def abs_listdir(
+    directory
+):
+    """
+    Parameters:
+        .. directory (str): abspath to directory/folder
+    
+    Returns:
+        .. files (list): abspaths to files in directory
+    """
+    return [
+        os.path.abspath(os.path.join(directory, f))
+        for f in os.listdir(directory)
+    ]
+
+
 def search_files_recursively(
     directory,
-    by_extensions = None,
+    prefix='',
+    by_extensions = [],
     abspaths = True
 ):
     """
     Parameters:
-        .. directory (string): abspath to directory
+        .. directory (str): abspath to directory
         .. by_extensions (list/array): extension file to look for. None means look for any file.
     
     Returns:
         .. files (list): all files that matches with extension (and other filter if added in the future...)
     """
     if by_extensions:
-        patterns = list(map(lambda x: '**/*'+x, by_extensions))
+        patterns = list(map(lambda x: '**/' + prefix + '*' + x, by_extensions))
         files = []
         for pattern in patterns:
             files.extend(Path(directory).glob(pattern))
 
     else:
-        files = list(Path(directory).glob('**/*.*'))
+        files = list(Path(directory).glob('**/' + prefix + '*.*'))
     
     if abspaths:
-        return [
+        return sorted([
             os.path.abspath(str(f))
             for f in files
-        ]
+        ])
 
     else:
-        return [
+        return sorted([
             str(f) for f in files
-        ]
+        ])
 
 
 #-----------------------

@@ -3,7 +3,7 @@ from torch import nn
 from torch.nn.init import normal, constant
 
 
-class BaseModel(nn.Module):
+class BaseModel(object):
 	"""Base Model (Abstract)
 
 	This is the abstract class for model. Model is a wrapper class that uses composition design pattern.

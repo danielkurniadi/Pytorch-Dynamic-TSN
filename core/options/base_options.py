@@ -54,7 +54,24 @@ class BaseOptions(object):
     #-----------------------
 
     def initialize(self, parser):
-        """ Define all options by adding arguments to argparser
+        """ Define all options by adding arguments to argparser.
+
+        Input Configs
+            .. Arguments for input config. Most will be defaulted to a value or determined by model choice.
+            .. Rarely one will configure input config by themselves, since every pretrained model has specific input config
+            .. However, leave it here to be attribute of opts that can be passed around
+
+        Runtime Configs
+            .. Arguments for devices and GPUs, options for logging and checkpoint directories, etc
+        
+        Model Configs
+            .. Argument for specifying model configurations, such as pretraining
+            .. Input and Output channels argument can be overriden by modality and datasetmode opts from Dataset opt
+        
+        Dataset Configs
+            .. Arguments for specifying where to load dataset, which splitting for dataset, transforms,
+                and dataset modalitites
+            .. 
         """
         # ========================= Runtime Configs ==========================
         parser.add_argument('--name', type=str, default='', 
@@ -67,34 +84,6 @@ class BaseOptions(object):
             help='# Threads for loading data')
         parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints',
             help='Models are saved here')
-
-        # ========================= Model Configs ==========================
-        parser.add_argument('--model', type=str, default='tsn',
-            help='Chooses which model to use. [tsn | resnext101]')
-        parser.add_argument('--pretrained', type=str, default='imagenet',
-            help='Chooses pretrained weights')
-        parser.add_argument('--n_classes', type=int, default=10,
-            help='# of output target classes')
-        parser.add_argument('--input_channels', type=int, default=3,
-            help='# of input image channels: 3 for RGB and 1 for grayscale')
-        parser.add_argument('--norm', type=str, default='instance',
-            help='instance normalization or batch normalization [instance | batch | none]')
-        parser.add_argument('--init_type', type=str, default='normal',
-            help='Network initialization [normal | xavier | kaiming | orthogonal]')
-        parser.add_argument('--init_gain', type=float, default=0.02,
-            help='Scaling factor for normal, xavier and orthogonal.')
-
-        # ========================= Data Configs ==========================
-        parser.add_argument('--split_dir', type=str, required=True,
-            help='Path to split directory where split files are')
-        parser.add_argument('--split_idx', type=int, required=True,
-            help='Split index, also known as "k" in KFold technique')
-        parser.add_argument('--metadata_type', type=str, default='II',
-            help='Type of metadata.')
-        parser.add_argument('--dataset_mode', type=str, default='Frame',
-            help='Chooses how datasets are loaded. [Frame | Temporal]')
-        parser.add_argument('--img_ext', type=str, default='.png',
-            help='File extension of images. [.png | .jpeg | .jpg]')
 
         # ========================= Input Configs ==========================
         parser.add_argument('-b', '--batch_size', type=int, default=32,
@@ -115,7 +104,33 @@ class BaseOptions(object):
             help='Then crop to this size')
         parser.add_argument('--no_flip', action='store_true',
             help='If specified, do not flip the images for data augmentation')
-        
+
+        # ========================= Model Configs ==========================
+        parser.add_argument('--arch', type=str, default='BNInception',
+            choices=['BNInception', 'Resnext101_32x4d', 'Resnext101_64x4d', 'Resnet101', 'InceptionV3', 'InceptionV4'],
+            help='Network architechture to use from pretrainedmodels')
+        parser.add_argument('--model', type=str, default='TSN',
+            choices=['TSN'],
+            help='Network architechture to use from pretrainedmodels')
+        parser.add_argument('--pretrained', type=str, default='imagenet',
+            help='Chooses pretrained weights')
+        parser.add_argument('--input_nc', type=int, default=3,
+            help='# of input image channels: 3 for RGB and 1 for grayscale')
+        parser.add_argument('--output_nc', type=int, default=10,
+            help='# of output target classes')
+        parser.add_argument('--norm', type=str, default='instance',
+            help='instance normalization or batch normalization [instance | batch | none]')
+        parser.add_argument('--init_type', type=str, default='normal',
+            help='Network initialization [normal | xavier | kaiming | orthogonal]')
+        parser.add_argument('--init_gain', type=float, default=0.02,
+            help='Scaling factor for normal, xavier and orthogonal.')
+
+        # ========================= Data Configs ==========================
+        parser.add_argument('--dataset_mode', type=str, default='Temporal',
+            help='Chooses how datasets are loaded. [Spatial | Temporal]')
+        parser.add_argument('--img_ext', type=str, default='.png',
+            help='File extension of images. [.png | .jpeg | .jpg]')
+
         # additional parameters
         parser.add_argument('--load_epoch', type=int, default='0',
             help='which epochs to load? if load_iter > 0, the code will load models by epoch_[load_epoch];')
