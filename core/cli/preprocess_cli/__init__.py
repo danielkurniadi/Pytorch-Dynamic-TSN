@@ -178,7 +178,6 @@ def video_denseOpticalFlow(
 
         for result in results:
             out, err = result.get()
-            
+            # logging result
             with open("logs/denseflow.txt", "a+") as f:
                 f.write("out %s, err %s\n" % (out, err))
-

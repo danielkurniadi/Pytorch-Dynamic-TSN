@@ -8,8 +8,7 @@ from core.cli.dataset_cli import (
     api_download,
     url_download,
     # Split dataset
-    skf_split_metadataI,
-    skf_split_metadataII,
+    skf_split_metadata,
     # Dataset index formatting
     format_index_of_filenames
 )
@@ -28,8 +27,7 @@ def dataset_cli():
 
 dataset_cli.add_command(api_download)
 dataset_cli.add_command(url_download)
-dataset_cli.add_command(skf_split_metadataII)
-dataset_cli.add_command(skf_split_metadataI)
+dataset_cli.add_command(skf_split_metadata)
 dataset_cli.add_command(format_index_of_filenames)
 
 

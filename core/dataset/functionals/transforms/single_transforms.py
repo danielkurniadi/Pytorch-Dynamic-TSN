@@ -1,6 +1,7 @@
 import random
 import numpy as numpy
-from PIL import Image. ImageOps
+from collections.abc import Iterable
+from PIL import Image, ImageOps
 
 import torch.utils.data as data
 import torchvision.transforms as transforms
@@ -18,8 +19,8 @@ def __make_power_2(img, base, method=Image.BICUBIC):
     return img.resize((w, h), method)
 
 
-def __scale(img, size, method=Image.BILINEAR):
-    if not _is_pil_image(img):
+def __scale(img, size, interpolation=Image.BILINEAR):
+    if not F._is_pil_image(img):
         raise TypeError('img should be PIL Image. Got {}'.format(type(img)))
     if not (isinstance(size, int) or (isinstance(size, Iterable) and len(size) == 2)):
         raise TypeError('Got inappropriate size arg: {}'.format(size))
@@ -31,13 +32,17 @@ def __scale(img, size, method=Image.BILINEAR):
         if w < h:
             ow = size
             oh = int(size * h / w)
+            # print("SCALE ", img.size)
             return img.resize((ow, oh), interpolation)
         else:
             oh = size
             ow = int(size * w / h)
+            # print("SCALE ", img.size)
             return img.resize((ow, oh), interpolation)
     else:
-        return img.resize(size[::-1], interpolation)
+        img = img.resize(size[::-1], interpolation)
+        # print("SCALE ", img.size)
+        return img
 
 
 def __crop(img, pos, size):
@@ -45,11 +50,14 @@ def __crop(img, pos, size):
     x1, y1 = pos
     tw = th = size
     if (ow > tw or oh > th):
+        # print("CROP ", img.size)
         return img.crop((x1, y1, x1 + tw, y1 + th))
+    # print("CROP ", img.size)
     return img
 
 
 def __flip(img, invert):
+    # print("FLIP ", img.size)
     out_img =  img.transpose(Image.FLIP_LEFT_RIGHT)
     if invert:
         out_img = ImageOps.invert(img)
