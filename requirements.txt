@@ -1,6 +1,6 @@
 wheel
 torch==1.0.1
 torchvision>=0.2.1
-opencv-contrib-python==3.4.4.19
+opencv-contrib-python==4.2.0.32
 numpy
 scipy
